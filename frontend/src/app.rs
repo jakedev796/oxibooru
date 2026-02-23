@@ -6,18 +6,27 @@ use leptos_router::path;
 use crate::api::ApiClient;
 use crate::auth::AuthState;
 use crate::components::navigation::Navigation;
+use oxibooru_shared::info::PublicConfig;
 use crate::pages::comments_page::CommentsPage;
 use crate::pages::help::HelpPage;
 use crate::pages::history::HistoryPage;
 use crate::pages::home::HomePage;
+use crate::pages::login::LoginPage;
+use crate::pages::logout::LogoutPage;
 use crate::pages::not_found::NotFoundPage;
+use crate::pages::password_reset::{PasswordResetPage, PasswordResetConfirmPage};
 use crate::pages::pool_list::PoolListPage;
 use crate::pages::pool_view::PoolViewPage;
 use crate::pages::post_list::PostListPage;
 use crate::pages::post_view::PostViewPage;
+use crate::pages::register::RegisterPage;
 use crate::pages::tag_list::TagListPage;
 use crate::pages::tag_view::TagViewPage;
+use crate::pages::settings::SettingsPage;
+use crate::pages::user_delete::UserDeletePage;
+use crate::pages::user_edit::UserEditPage;
 use crate::pages::user_list::UserListPage;
+use crate::pages::user_tokens::UserTokensPage;
 use crate::pages::user_view::UserViewPage;
 use crate::settings::SettingsState;
 
@@ -49,17 +58,26 @@ pub fn App() -> impl IntoView {
     let settings = SettingsState::new();
     provide_context(settings);
 
-    // Fetch initial server info to populate privileges
+    // Server config context — used by registration, password reset, etc.
+    let server_config: RwSignal<Option<PublicConfig>> = RwSignal::new(None);
+    provide_context(server_config);
+
+    // Fetch initial server info to populate privileges and config
     let initial_info = LocalResource::new(move || {
         let client = api.get();
         async move { client.get_info().await.ok() }
     });
 
-    // When info loads, update auth state with privileges
+    // When info loads, update auth state with privileges and server config
     Effect::new(move || {
         if let Some(Some(info)) = initial_info.get() {
             auth.privileges
                 .set(Some(info.config.privileges.clone()));
+            server_config.set(Some(info.config.clone()));
+            // Verify stored credentials and populate current_user
+            leptos::task::spawn_local(async move {
+                auth.verify_session().await;
+            });
         }
     });
 
@@ -99,16 +117,16 @@ pub fn App() -> impl IntoView {
                     // Users
                     <Route path=path!("/users") view=UserListPage />
                     <Route path=path!("/user/:name") view=UserViewPage />
-                    <Route path=path!("/user/:name/edit") view=|| view! { <Todo name="Edit User" /> } />
-                    <Route path=path!("/user/:name/list-tokens") view=|| view! { <Todo name="User Tokens" /> } />
-                    <Route path=path!("/user/:name/delete") view=|| view! { <Todo name="Delete User" /> } />
+                    <Route path=path!("/user/:name/edit") view=UserEditPage />
+                    <Route path=path!("/user/:name/list-tokens") view=UserTokensPage />
+                    <Route path=path!("/user/:name/delete") view=UserDeletePage />
 
                     // Auth
-                    <Route path=path!("/login") view=|| view! { <Todo name="Log In" /> } />
-                    <Route path=path!("/logout") view=|| view! { <Todo name="Log Out" /> } />
-                    <Route path=path!("/register") view=|| view! { <Todo name="Register" /> } />
-                    <Route path=path!("/password-reset") view=|| view! { <Todo name="Password Reset" /> } />
-                    <Route path=path!("/password-reset/:token") view=|| view! { <Todo name="Password Reset" /> } />
+                    <Route path=path!("/login") view=LoginPage />
+                    <Route path=path!("/logout") view=LogoutPage />
+                    <Route path=path!("/register") view=RegisterPage />
+                    <Route path=path!("/password-reset") view=PasswordResetPage />
+                    <Route path=path!("/password-reset/:token") view=PasswordResetConfirmPage />
 
                     // Comments
                     <Route path=path!("/comments") view=CommentsPage />
@@ -117,7 +135,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("/history") view=HistoryPage />
 
                     // Settings
-                    <Route path=path!("/settings") view=|| view! { <Todo name="Settings" /> } />
+                    <Route path=path!("/settings") view=SettingsPage />
 
                     // Help
                     <Route path=path!("/help") view=HelpPage />

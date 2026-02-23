@@ -3,6 +3,7 @@ pub mod comment;
 pub mod enums;
 pub mod info;
 pub mod pagination;
+pub mod password_reset;
 pub mod pool;
 pub mod post;
 pub mod request;

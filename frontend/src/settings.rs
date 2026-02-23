@@ -49,7 +49,7 @@ impl Settings {
 }
 
 /// Settings state provided as Leptos context.
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct SettingsState {
     pub inner: RwSignal<Settings>,
 }
@@ -67,5 +67,41 @@ impl SettingsState {
             f(s);
             s.save();
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_settings_values() {
+        let s = Settings::default();
+        assert_eq!(s.posts_per_page, 42);
+        assert!(s.tag_suggestions_enabled);
+        assert!(!s.dark_theme);
+        assert!(s.list_posts_safe);
+        assert!(s.list_posts_sketchy);
+        assert!(!s.list_posts_unsafe);
+        assert!(!s.upscale_small_posts);
+        assert!(!s.endless_scroll);
+        assert!(!s.tag_underscores);
+        assert_eq!(s.fit_mode, "fit-both");
+    }
+
+    #[test]
+    fn settings_serialize_roundtrip() {
+        let original = Settings {
+            posts_per_page: 100,
+            dark_theme: true,
+            fit_mode: "fit-width".to_string(),
+            ..Settings::default()
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let restored: Settings = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored.posts_per_page, 100);
+        assert!(restored.dark_theme);
+        assert_eq!(restored.fit_mode, "fit-width");
+        assert!(restored.tag_suggestions_enabled); // unchanged default
     }
 }

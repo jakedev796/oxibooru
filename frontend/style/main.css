@@ -930,6 +930,200 @@ main {
 }
 
 /* ========================================
+   Forms (login, register, settings, user edit)
+   ======================================== */
+.content-wrapper {
+    max-width: 600px;
+}
+
+.content-wrapper h1 {
+    margin-bottom: 1rem;
+}
+
+ul.input {
+    list-style: none;
+    margin-bottom: 1rem;
+}
+
+ul.input li {
+    margin-bottom: 0.75rem;
+}
+
+ul.input label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+ul.input input[type="text"],
+ul.input input[type="password"],
+ul.input input[type="email"],
+ul.input input[type="number"],
+ul.input select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+
+ul.input input:focus,
+ul.input select:focus {
+    border-color: #4a9eff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+ul.input input:disabled,
+ul.input select:disabled {
+    background: #f5f5f5;
+    color: #999;
+}
+
+ul.input input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+}
+
+ul.input input[type="checkbox"] + span,
+ul.input label:has(input[type="checkbox"]) {
+    font-weight: normal;
+}
+
+ul.input input[type="number"] {
+    width: 6em;
+}
+
+.hint {
+    display: block;
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.2rem;
+}
+
+.messages {
+    margin-bottom: 1rem;
+}
+
+.message {
+    padding: 0.5rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+
+.message.error {
+    background: #fee;
+    color: #c44;
+    border: 1px solid #fcc;
+}
+
+.message.success {
+    background: #efe;
+    color: #4a4;
+    border: 1px solid #cec;
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+input[type="submit"] {
+    padding: 0.5rem 1.5rem;
+    background: #4a9eff;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+input[type="submit"]:hover {
+    background: #3a8eef;
+}
+
+input[type="submit"]:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
+
+input[type="submit"].dangerous,
+button.dangerous {
+    background: #c44;
+}
+
+input[type="submit"].dangerous:hover,
+button.dangerous:hover {
+    background: #b33;
+}
+
+/* Safety settings inline checkboxes */
+.safety-settings {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.safety-settings span {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.safety-settings label {
+    display: inline-flex !important;
+    align-items: center;
+    font-weight: normal !important;
+    margin-bottom: 0 !important;
+}
+
+/* Token list table */
+.token-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.token-list th {
+    text-align: left;
+    padding: 0.5rem;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.token-list td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.token-list .token-value code {
+    font-size: 0.8rem;
+    background: #f4f4f4;
+    padding: 1px 4px;
+    border-radius: 3px;
+    word-break: break-all;
+}
+
+.token-list button {
+    padding: 0.25rem 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.token-list button:hover {
+    background: #f0f0f0;
+}
+
+/* ========================================
    Responsive
    ======================================== */
 @media (max-width: 768px) {

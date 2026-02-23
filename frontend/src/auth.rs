@@ -44,7 +44,7 @@ impl AuthState {
     }
 
     /// Log in with username and password.
-    /// Calls `/info?bump-login=true` to verify credentials and get user info.
+    /// Verifies credentials via `/info?bump-login=true`, then fetches the user profile.
     pub async fn login(
         &self,
         username: String,
@@ -68,6 +68,11 @@ impl AuthState {
                 let _ = LocalStorage::set(STORAGE_KEY_USERNAME, &username);
                 let _ = LocalStorage::set(STORAGE_KEY_PASSWORD, &password);
                 self.privileges.set(Some(resp.config.privileges.clone()));
+
+                // Fetch and set current user profile
+                if let Ok(user) = self.api.get_untracked().get_user(&username).await {
+                    self.current_user.set(Some(user));
+                }
             }
             Err(_) => {
                 // Clear credentials on failure
@@ -78,6 +83,32 @@ impl AuthState {
         }
 
         info
+    }
+
+    /// Verify stored credentials and populate current_user on app startup.
+    /// Should be called once after AuthState::new() if credentials were restored.
+    pub async fn verify_session(&self) {
+        // Only try if credentials are set
+        let has_creds = self.api.get_untracked().has_credentials();
+        if !has_creds {
+            return;
+        }
+
+        match self.api.get_untracked().get_info_bump_login().await {
+            Ok(resp) => {
+                self.privileges.set(Some(resp.config.privileges.clone()));
+                // Extract username from stored credentials
+                if let Ok(username) = LocalStorage::get::<String>(STORAGE_KEY_USERNAME) {
+                    if let Ok(user) = self.api.get_untracked().get_user(&username).await {
+                        self.current_user.set(Some(user));
+                    }
+                }
+            }
+            Err(_) => {
+                // Stored credentials are invalid — clear them
+                self.logout();
+            }
+        }
     }
 
     /// Log out — clear credentials and user state.

@@ -1,9 +1,11 @@
 pub mod comments;
 pub mod info;
+pub mod password_reset;
 pub mod pools;
 pub mod posts;
 pub mod snapshots;
 pub mod tags;
+pub mod user_tokens;
 pub mod users;
 
 use gloo_net::http::{RequestBuilder, Response};
@@ -84,6 +86,10 @@ impl ApiClient {
 
     pub fn set_credentials(&mut self, creds: Option<Credentials>) {
         self.credentials = creds;
+    }
+
+    pub fn has_credentials(&self) -> bool {
+        self.credentials.is_some()
     }
 
     fn url(&self, path: &str) -> String {
