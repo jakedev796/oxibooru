@@ -1,2 +1,13 @@
+pub mod comments_page;
+pub mod help;
+pub mod history;
 pub mod home;
 pub mod not_found;
+pub mod pool_list;
+pub mod pool_view;
+pub mod post_list;
+pub mod post_view;
+pub mod tag_list;
+pub mod tag_view;
+pub mod user_list;
+pub mod user_view;

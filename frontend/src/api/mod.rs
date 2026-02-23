@@ -1,4 +1,10 @@
+pub mod comments;
 pub mod info;
+pub mod pools;
+pub mod posts;
+pub mod snapshots;
+pub mod tags;
+pub mod users;
 
 use gloo_net::http::{RequestBuilder, Response};
 use oxibooru_shared::pagination::ErrorResponse;

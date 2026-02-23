@@ -16,6 +16,7 @@ pub struct Settings {
     pub upscale_small_posts: bool,
     pub endless_scroll: bool,
     pub tag_underscores: bool,
+    pub fit_mode: String,
 }
 
 impl Default for Settings {
@@ -30,6 +31,7 @@ impl Default for Settings {
             upscale_small_posts: false,
             endless_scroll: false,
             tag_underscores: false,
+            fit_mode: "fit-both".to_string(),
         }
     }
 }

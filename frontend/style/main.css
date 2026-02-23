@@ -19,6 +19,15 @@ body {
     min-height: 100vh;
 }
 
+a {
+    color: #2a7ae2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 /* Navigation */
 .top-navigation {
     background: #2a2a2a;
@@ -118,4 +127,861 @@ main {
     padding: 1rem;
     background: #fee;
     border-radius: 4px;
+}
+
+/* ========================================
+   Search Bar
+   ======================================== */
+.search-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.search-bar input[type="text"] {
+    flex: 1;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+
+.search-bar input[type="text"]:focus {
+    border-color: #4a9eff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+.search-bar button {
+    padding: 0.4rem 1rem;
+    background: #4a9eff;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.search-bar button:hover {
+    background: #3a8eef;
+}
+
+/* ========================================
+   Pagination
+   ======================================== */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.pagination a:hover {
+    background: #f0f0f0;
+    text-decoration: none;
+}
+
+.pagination a.active {
+    background: #4a9eff;
+    color: #fff;
+    border-color: #4a9eff;
+}
+
+.pagination .ellipsis {
+    padding: 0.3rem 0.4rem;
+    color: #999;
+}
+
+.pagination .total {
+    margin-left: auto;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+/* ========================================
+   Post Thumbnail Grid
+   ======================================== */
+.post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.post-thumbnail {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.post-thumbnail a {
+    display: block;
+    position: relative;
+}
+
+.post-thumbnail img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.safety-badge {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.safety-safe { background: #3c3; }
+.safety-sketchy { background: #fc3; color: #333; }
+.safety-unsafe { background: #c33; }
+
+.type-badge {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 0.8rem;
+}
+
+.post-stats {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.post-stats .stat {
+    white-space: nowrap;
+}
+
+/* ========================================
+   Post Content (fit modes)
+   ======================================== */
+.post-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.post-content img,
+.post-content video {
+    max-width: 100%;
+    display: block;
+}
+
+.post-content.fit-both img,
+.post-content.fit-both video {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+}
+
+.post-content.fit-width img,
+.post-content.fit-width video {
+    width: 100%;
+    height: auto;
+}
+
+.post-content.fit-height img,
+.post-content.fit-height video {
+    max-height: 85vh;
+    width: auto;
+}
+
+.post-content.fit-original img,
+.post-content.fit-original video {
+    max-width: none;
+    max-height: none;
+}
+
+.flash-notice {
+    padding: 2rem;
+    color: #888;
+    text-align: center;
+}
+
+/* ========================================
+   Tables (Tag list, Pool list, History)
+   ======================================== */
+.tag-list,
+.pool-list,
+.history-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.tag-list th,
+.pool-list th,
+.history-list th {
+    text-align: left;
+    padding: 0.5rem;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.tag-list td,
+.pool-list td,
+.history-list td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.tag-list tr:hover,
+.pool-list tr:hover,
+.history-list tr:hover {
+    background: #f9f9f9;
+}
+
+.tag-relations {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+/* Operation badges in history */
+.operation-created { color: #2a7ae2; }
+.operation-modified { color: #e2a02a; }
+.operation-deleted { color: #c33; }
+.operation-merged { color: #7a2ae2; }
+
+/* ========================================
+   User Grid
+   ======================================== */
+.user-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.user-card {
+    border: 1px solid #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.user-card a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.user-card a:hover {
+    background: #f9f9f9;
+    text-decoration: none;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-rank {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.user-date {
+    font-size: 0.7rem;
+    color: #aaa;
+}
+
+/* User rank colors */
+.rank-anonymous { color: #999; }
+.rank-restricted { color: #c93; }
+.rank-regular { color: #666; }
+.rank-power { color: #39c; }
+.rank-moderator { color: #c33; }
+.rank-administrator { color: #93c; }
+
+/* ========================================
+   Comments Page
+   ======================================== */
+.comments-page h1 {
+    margin-bottom: 1rem;
+}
+
+.post-comments {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.post-comments-thumb {
+    flex-shrink: 0;
+}
+
+.post-comments-thumb img {
+    width: 150px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.post-comments-body {
+    flex: 1;
+}
+
+.comment {
+    margin-bottom: 0.75rem;
+}
+
+.comment-header {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.comment-author {
+    font-weight: 600;
+}
+
+.comment-header time {
+    color: #888;
+}
+
+.comment-score {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+/* ========================================
+   Post View Page
+   ======================================== */
+.post-view {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.post-content-area {
+    min-width: 0;
+}
+
+.post-sidebar section {
+    margin-bottom: 1.5rem;
+}
+
+.post-sidebar h2 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #eee;
+}
+
+.post-info dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.post-info dt {
+    font-weight: 600;
+    color: #666;
+}
+
+.post-source {
+    margin-top: 0.5rem;
+    word-break: break-all;
+    font-size: 0.85rem;
+}
+
+.post-source h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+/* Tag list inline */
+.tag-list-inline {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.tag-list-inline li {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.tag-list-inline a {
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: #e8f0fe;
+}
+
+.tag-list-inline a:hover {
+    background: #d0e2fc;
+    text-decoration: none;
+}
+
+.tag-usages,
+.sibling-count {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+/* Relations */
+.relation-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.relation-thumbs img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+/* Post description and comments */
+.post-description {
+    margin-bottom: 1.5rem;
+}
+
+.post-description h2,
+.post-view-page > .post-comments h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.no-comments {
+    color: #888;
+    font-style: italic;
+}
+
+/* Post prev/next navigation */
+.post-neighbors {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.post-neighbors .prev,
+.post-neighbors .next {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.post-neighbors .prev:hover,
+.post-neighbors .next:hover {
+    background: #f0f0f0;
+    text-decoration: none;
+}
+
+/* ========================================
+   Tag View Page
+   ======================================== */
+.tag-view header {
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+}
+
+.tag-view header h1 {
+    font-size: 1.5rem;
+}
+
+.tag-summary dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.tag-summary dt {
+    font-weight: 600;
+    color: #666;
+}
+
+.tag-aliases,
+.tag-description,
+.tag-implications,
+.tag-suggestions,
+.tag-siblings {
+    margin-bottom: 1rem;
+}
+
+.tag-aliases h3,
+.tag-description h2,
+.tag-implications h2,
+.tag-suggestions h2,
+.tag-siblings h2 {
+    margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   Pool View Page
+   ======================================== */
+.pool-view header {
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+}
+
+.pool-view header h1 {
+    font-size: 1.5rem;
+}
+
+.pool-summary dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.pool-summary dt {
+    font-weight: 600;
+    color: #666;
+}
+
+.pool-aliases,
+.pool-description,
+.pool-posts {
+    margin-bottom: 1rem;
+}
+
+.pool-aliases h3,
+.pool-description h2,
+.pool-posts h2 {
+    margin-bottom: 0.5rem;
+}
+
+.pool-post-thumb img {
+    width: 120px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* ========================================
+   User View Page
+   ======================================== */
+.user-profile {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.user-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-details h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.user-stats {
+    max-width: 400px;
+}
+
+.user-stats h2 {
+    margin-bottom: 0.5rem;
+}
+
+.user-stats dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2rem 1rem;
+}
+
+.user-stats dt {
+    font-weight: 600;
+    color: #666;
+}
+
+/* ========================================
+   Help Page
+   ======================================== */
+.help-page {
+    max-width: 45em;
+}
+
+.help-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 1.5rem;
+}
+
+.help-nav li a {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.help-nav li a:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+.help-nav li.active a {
+    color: #2a7ae2;
+    border-bottom-color: #2a7ae2;
+}
+
+.help-subnav ul {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.help-subnav a {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.help-subnav a:hover {
+    background: #f0f0f0;
+    text-decoration: none;
+}
+
+.help-content h1 {
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+}
+
+.help-content h2 {
+    font-size: 1.1rem;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.help-content h3 {
+    font-size: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+.help-content p {
+    margin-bottom: 0.5rem;
+}
+
+.help-content ul,
+.help-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.help-content dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.help-content dt {
+    font-weight: 600;
+}
+
+.help-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.75rem;
+}
+
+.help-content th {
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 2px solid #ddd;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.help-content td {
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.help-content code {
+    background: #f4f4f4;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+.help-content kbd {
+    background: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+
+/* ========================================
+   Markdown content
+   ======================================== */
+.markdown-content {
+    line-height: 1.6;
+}
+
+.markdown-content p {
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content code {
+    background: #f4f4f4;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.markdown-content pre {
+    background: #f4f4f4;
+    padding: 0.75rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content pre code {
+    background: none;
+    padding: 0;
+}
+
+.markdown-content table {
+    border-collapse: collapse;
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+    border: 1px solid #ddd;
+    padding: 0.3rem 0.6rem;
+}
+
+.markdown-content img {
+    max-width: 100%;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 768px) {
+    .post-view {
+        grid-template-columns: 1fr;
+    }
+
+    .post-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .user-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .post-comments {
+        flex-direction: column;
+    }
+
+    .post-comments-thumb img {
+        width: 100px;
+    }
+
+    .help-nav ul {
+        flex-wrap: wrap;
+    }
+
+    .tag-list,
+    .pool-list,
+    .history-list {
+        display: block;
+    }
+
+    .tag-list thead,
+    .pool-list thead,
+    .history-list thead {
+        display: none;
+    }
+
+    .tag-list tr,
+    .pool-list tr,
+    .history-list tr {
+        display: block;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .tag-list td,
+    .pool-list td,
+    .history-list td {
+        display: block;
+        padding: 0.1rem 0;
+        border: none;
+    }
 }
