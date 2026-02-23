@@ -41,6 +41,22 @@ services:
     ports:
       - "${PORT}:80"
 
+  # Leptos (Rust/WASM) frontend — alternative to the legacy JS client.
+  # To use, set FRONTEND_PORT in .env and point your browser at it instead.
+  frontend:
+    image: oxibooru/frontend:latest
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      - server
+    environment:
+      BACKEND_HOST: server
+    volumes:
+      - "${MOUNT_DATA}:/data:ro"
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
   sql:
     image: postgres:16-alpine
     restart: unless-stopped
