@@ -15,3 +15,10 @@ target/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Playwright
+e2e/test-results/
+e2e/playwright-report/
+
+# Trunk build output
+frontend/dist/

@@ -1,0 +1,78 @@
+name: Frontend CI
+on:
+  push:
+    branches: [master]
+    paths:
+      - "frontend/**"
+      - "shared/**"
+  pull_request:
+    branches: [master]
+    paths:
+      - "frontend/**"
+      - "shared/**"
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Run cargo check
+        run: cargo check -p oxibooru-frontend --target wasm32-unknown-unknown
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy
+
+      - name: Run Clippy
+        run: cargo clippy -p oxibooru-frontend --target wasm32-unknown-unknown -- -D warnings
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Run rustfmt
+        run: cargo fmt -p oxibooru-frontend -- --check
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run frontend tests
+        run: cargo test -p oxibooru-frontend --lib
+
+      - name: Run shared tests
+        run: cargo test -p oxibooru-shared --lib

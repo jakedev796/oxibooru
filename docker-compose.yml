@@ -28,14 +28,15 @@ services:
       - "./server/config.toml:/opt/app/config.toml"
     stop_signal: SIGINT
 
-  client:
-    image: oxibooru/client:latest
-    build: client
+  frontend:
+    image: oxibooru/frontend:latest
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     depends_on:
       - server
     environment:
       BACKEND_HOST: server
-      BASE_URL:
     volumes:
       - "${MOUNT_DATA}:/data:ro"
     ports:

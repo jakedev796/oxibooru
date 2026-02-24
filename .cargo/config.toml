@@ -1,0 +1,4 @@
+[env]
+# FFmpeg 6.1 from AUR — needed because system FFmpeg 8.x removed avfft.h
+# which ffmpeg-sys-next 7.1.3 (via video-rs) still requires.
+PKG_CONFIG_PATH = { value = "/usr/lib/ffmpeg6.1/pkgconfig", force = true }
