@@ -14,9 +14,7 @@ fn mount_pagination(offset: i64, limit: i64, total: i64) -> web_sys::Element {
 
     let html_el: web_sys::HtmlElement = wasm_bindgen::JsCast::unchecked_into(container.clone());
     leptos::mount::mount_to(html_el, move || {
-        let href_for_page = Callback::new(move |(off, lim): (i64, i64)| {
-            format!("/posts?offset={off}&limit={lim}")
-        });
+        let href_for_page = Callback::new(move |(off, lim): (i64, i64)| format!("/posts?offset={off}&limit={lim}"));
         view! {
             <Router>
                 <Pagination offset=offset limit=limit total=total href_for_page=href_for_page />

@@ -9,11 +9,7 @@ use crate::api::ApiClient;
 
 /// Debounced tag search dropdown with keyboard navigation.
 #[component]
-pub fn TagAutocomplete(
-    on_select: Callback<String>,
-    #[prop(optional, into)]
-    placeholder: String,
-) -> impl IntoView {
+pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] placeholder: String) -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let (query, set_query) = signal(String::new());
     let (results, set_results) = signal(Vec::<TagInfo>::new());
@@ -61,43 +57,41 @@ pub fn TagAutocomplete(
         }
     };
 
-    let on_keydown = move |ev: web_sys::KeyboardEvent| {
-        match ev.key().as_str() {
-            "ArrowDown" => {
-                ev.prevent_default();
-                let len = results.get_untracked().len();
-                if len > 0 {
-                    set_selected_index.update(|idx| {
-                        *idx = Some(match *idx {
-                            Some(i) => (i + 1).min(len - 1),
-                            None => 0,
-                        });
-                    });
-                }
-            }
-            "ArrowUp" => {
-                ev.prevent_default();
+    let on_keydown = move |ev: web_sys::KeyboardEvent| match ev.key().as_str() {
+        "ArrowDown" => {
+            ev.prevent_default();
+            let len = results.get_untracked().len();
+            if len > 0 {
                 set_selected_index.update(|idx| {
-                    *idx = match *idx {
-                        Some(0) | None => None,
-                        Some(i) => Some(i - 1),
-                    };
+                    *idx = Some(match *idx {
+                        Some(i) => (i + 1).min(len - 1),
+                        None => 0,
+                    });
                 });
             }
-            "Enter" => {
-                ev.prevent_default();
-                if let Some(i) = selected_index.get_untracked() {
-                    let items = results.get_untracked();
-                    if let Some(tag) = items.get(i) {
-                        select_item(tag);
-                    }
+        }
+        "ArrowUp" => {
+            ev.prevent_default();
+            set_selected_index.update(|idx| {
+                *idx = match *idx {
+                    Some(0) | None => None,
+                    Some(i) => Some(i - 1),
+                };
+            });
+        }
+        "Enter" => {
+            ev.prevent_default();
+            if let Some(i) = selected_index.get_untracked() {
+                let items = results.get_untracked();
+                if let Some(tag) = items.get(i) {
+                    select_item(tag);
                 }
             }
-            "Escape" => {
-                set_show_dropdown.set(false);
-            }
-            _ => {}
         }
+        "Escape" => {
+            set_show_dropdown.set(false);
+        }
+        _ => {}
     };
 
     let on_blur = move |_| {

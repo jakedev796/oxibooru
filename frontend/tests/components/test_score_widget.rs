@@ -3,8 +3,8 @@ use wasm_bindgen_test::*;
 wasm_bindgen_test_configure!(run_in_browser);
 
 use leptos::prelude::*;
-use oxibooru_shared::enums::Rating;
 use oxibooru_frontend::components::score_widget::ScoreWidget;
+use oxibooru_shared::enums::Rating;
 
 /// Helper: mount ScoreWidget with given state.
 fn mount_score(score: i64, own_score: Rating) -> web_sys::Element {

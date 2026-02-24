@@ -38,12 +38,7 @@ pub struct UpdateUserBody {
 }
 
 impl ApiClient {
-    pub async fn get_users(
-        &self,
-        query: &str,
-        offset: i64,
-        limit: i64,
-    ) -> Result<PagedResponse<UserInfo>, ApiError> {
+    pub async fn get_users(&self, query: &str, offset: i64, limit: i64) -> Result<PagedResponse<UserInfo>, ApiError> {
         self.get(
             "/users",
             &[
@@ -63,21 +58,12 @@ impl ApiClient {
         self.post("/users", body).await
     }
 
-    pub async fn update_user(
-        &self,
-        name: &str,
-        body: &UpdateUserBody,
-    ) -> Result<UserInfo, ApiError> {
+    pub async fn update_user(&self, name: &str, body: &UpdateUserBody) -> Result<UserInfo, ApiError> {
         self.put(&format!("/user/{}", url_encode(name)), body).await
     }
 
-    pub async fn delete_user(
-        &self,
-        name: &str,
-        body: &DeleteBody,
-    ) -> Result<(), ApiError> {
-        self.delete(&format!("/user/{}", url_encode(name)), body)
-            .await
+    pub async fn delete_user(&self, name: &str, body: &DeleteBody) -> Result<(), ApiError> {
+        self.delete(&format!("/user/{}", url_encode(name)), body).await
     }
 }
 

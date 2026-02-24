@@ -2,11 +2,7 @@ use leptos::prelude::*;
 use oxibooru_shared::enums::Rating;
 
 #[component]
-pub fn ScoreWidget(
-    score: RwSignal<i64>,
-    own_score: RwSignal<Rating>,
-    on_vote: Callback<Rating>,
-) -> impl IntoView {
+pub fn ScoreWidget(score: RwSignal<i64>, own_score: RwSignal<Rating>, on_vote: Callback<Rating>) -> impl IntoView {
     view! {
         <div class="score-widget">
             <button

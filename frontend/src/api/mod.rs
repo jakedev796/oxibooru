@@ -160,32 +160,19 @@ impl ApiClient {
     }
 
     /// GET request.
-    pub async fn get<T: DeserializeOwned>(
-        &self,
-        path: &str,
-        query: &[(&str, &str)],
-    ) -> Result<T, ApiError> {
-        let builder = self.apply_auth(
-            gloo_net::http::Request::get(&self.url(path)),
-        );
+    pub async fn get<T: DeserializeOwned>(&self, path: &str, query: &[(&str, &str)]) -> Result<T, ApiError> {
+        let builder = self.apply_auth(gloo_net::http::Request::get(&self.url(path)));
         let builder = if query.is_empty() {
             builder
         } else {
             builder.query(query.iter().copied())
         };
-        let resp = builder
-            .send()
-            .await
-            .map_err(|e| ApiError::Network(e.to_string()))?;
+        let resp = builder.send().await.map_err(|e| ApiError::Network(e.to_string()))?;
         Self::parse_response(resp).await
     }
 
     /// POST request with JSON body.
-    pub async fn post<T: DeserializeOwned, B: Serialize>(
-        &self,
-        path: &str,
-        body: &B,
-    ) -> Result<T, ApiError> {
+    pub async fn post<T: DeserializeOwned, B: Serialize>(&self, path: &str, body: &B) -> Result<T, ApiError> {
         let resp = self
             .apply_auth(gloo_net::http::Request::post(&self.url(path)))
             .json(body)
@@ -197,11 +184,7 @@ impl ApiClient {
     }
 
     /// PUT request with JSON body.
-    pub async fn put<T: DeserializeOwned, B: Serialize>(
-        &self,
-        path: &str,
-        body: &B,
-    ) -> Result<T, ApiError> {
+    pub async fn put<T: DeserializeOwned, B: Serialize>(&self, path: &str, body: &B) -> Result<T, ApiError> {
         let resp = self
             .apply_auth(gloo_net::http::Request::put(&self.url(path)))
             .json(body)
@@ -213,11 +196,7 @@ impl ApiClient {
     }
 
     /// DELETE request with JSON body.
-    pub async fn delete<B: Serialize>(
-        &self,
-        path: &str,
-        body: &B,
-    ) -> Result<(), ApiError> {
+    pub async fn delete<B: Serialize>(&self, path: &str, body: &B) -> Result<(), ApiError> {
         let resp = self
             .apply_auth(gloo_net::http::Request::delete(&self.url(path)))
             .json(body)
@@ -270,10 +249,7 @@ impl ApiClient {
     }
 
     /// POST request with no body (empty JSON object).
-    pub async fn post_no_body<T: DeserializeOwned>(
-        &self,
-        path: &str,
-    ) -> Result<T, ApiError> {
+    pub async fn post_no_body<T: DeserializeOwned>(&self, path: &str) -> Result<T, ApiError> {
         let resp = self
             .apply_auth(gloo_net::http::Request::post(&self.url(path)))
             .json(&serde_json::json!({}))
@@ -285,10 +261,7 @@ impl ApiClient {
     }
 
     /// DELETE request that returns a deserialized response body.
-    pub async fn delete_with_response<T: DeserializeOwned>(
-        &self,
-        path: &str,
-    ) -> Result<T, ApiError> {
+    pub async fn delete_with_response<T: DeserializeOwned>(&self, path: &str) -> Result<T, ApiError> {
         let resp = self
             .apply_auth(gloo_net::http::Request::delete(&self.url(path)))
             .send()

@@ -10,20 +10,13 @@ async fn get_tag_categories_returns_unpaged() {
     let resp = reqwest::get(&url)
         .await
         .expect("backend not reachable — is it running on port 6666?");
-    assert!(
-        resp.status().is_success(),
-        "GET /tag-categories returned {}",
-        resp.status()
-    );
+    assert!(resp.status().is_success(), "GET /tag-categories returned {}", resp.status());
 
     let data: UnpagedResponse<TagCategoryInfo> = resp
         .json()
         .await
         .expect("failed to deserialize UnpagedResponse<TagCategoryInfo>");
-    assert!(
-        !data.results.is_empty(),
-        "should have at least one tag category (default)"
-    );
+    assert!(!data.results.is_empty(), "should have at least one tag category (default)");
 
     // At least one should be default
     let has_default = data.results.iter().any(|c| c.default == Some(true));
@@ -58,8 +51,5 @@ async fn create_tag_category_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated POST /tag-categories should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated POST /tag-categories should fail, got {status}");
 }

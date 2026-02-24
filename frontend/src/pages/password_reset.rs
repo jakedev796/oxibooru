@@ -28,9 +28,7 @@ pub fn PasswordResetPage() -> impl IntoView {
         leptos::task::spawn_local(async move {
             match client.request_password_reset(&ident).await {
                 Ok(()) => {
-                    set_success_msg.set(Some(
-                        "Password reset email sent. Check your inbox.".to_string(),
-                    ));
+                    set_success_msg.set(Some("Password reset email sent. Check your inbox.".to_string()));
                     set_submitting.set(false);
                 }
                 Err(e) => {
@@ -98,7 +96,7 @@ pub fn PasswordResetConfirmPage() -> impl IntoView {
 
         // Decode URI component
         let decoded = js_sys::decode_uri_component(&raw)
-            .map(|s| String::from(s))
+            .map(String::from)
             .unwrap_or(raw.clone());
 
         // Split on ":" to get (identifier, token)
@@ -155,7 +153,7 @@ pub fn PasswordResetConfirmPage() -> impl IntoView {
                         </div>
                     }.into_any()
                 } else {
-                    view! {}.into_any()
+                    ().into_any()
                 }
             }}
         </div>

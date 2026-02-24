@@ -13,17 +13,13 @@ pub fn CategoryStyles() -> impl IntoView {
         for cat in tag_categories.get() {
             if let (Some(name), Some(color)) = (&cat.name, &cat.color) {
                 let color = normalize_color(color);
-                rules.push_str(&format!(
-                    ".tag-category-{name} {{ color: {color}; }}\n"
-                ));
+                rules.push_str(&format!(".tag-category-{name} {{ color: {color}; }}\n"));
             }
         }
         for cat in pool_categories.get() {
             if let (Some(name), Some(color)) = (&cat.name, &cat.color) {
                 let color = normalize_color(color);
-                rules.push_str(&format!(
-                    ".pool-category-{name} {{ color: {color}; }}\n"
-                ));
+                rules.push_str(&format!(".pool-category-{name} {{ color: {color}; }}\n"));
             }
         }
         rules
@@ -46,10 +42,8 @@ fn normalize_color(color: &str) -> String {
         return trimmed.to_string();
     }
     // Looks like a bare hex value
-    if trimmed.len() == 3 || trimmed.len() == 6 {
-        if trimmed.chars().all(|c| c.is_ascii_hexdigit()) {
-            return format!("#{trimmed}");
-        }
+    if (trimmed.len() == 3 || trimmed.len() == 6) && trimmed.chars().all(|c| c.is_ascii_hexdigit()) {
+        return format!("#{trimmed}");
     }
     trimmed.to_string()
 }

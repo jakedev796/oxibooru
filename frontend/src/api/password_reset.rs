@@ -10,10 +10,7 @@ pub struct PasswordResetTokenBody {
 
 impl ApiClient {
     /// Request a password reset email. `GET /password-reset/{identifier}`.
-    pub async fn request_password_reset(
-        &self,
-        identifier: &str,
-    ) -> Result<(), ApiError> {
+    pub async fn request_password_reset(&self, identifier: &str) -> Result<(), ApiError> {
         let _: serde_json::Value = self
             .get(&format!("/password-reset/{}", url_encode(identifier)), &[])
             .await?;
@@ -27,11 +24,8 @@ impl ApiClient {
         identifier: &str,
         body: &PasswordResetTokenBody,
     ) -> Result<PasswordResetResponse, ApiError> {
-        self.post(
-            &format!("/password-reset/{}", url_encode(identifier)),
-            body,
-        )
-        .await
+        self.post(&format!("/password-reset/{}", url_encode(identifier)), body)
+            .await
     }
 }
 

@@ -11,9 +11,9 @@ use wasm_bindgen::JsCast;
 
 use crate::api::posts::UpdatePostBody;
 use crate::api::{ApiClient, ApiError};
+use crate::auth::AuthState;
 use crate::components::api_error::ApiErrorMessage;
 use crate::components::loading_bar::LoadingState;
-use crate::auth::AuthState;
 use crate::components::pagination::Pagination;
 use crate::components::post_thumbnail::PostThumbnail;
 use crate::components::search_bar::SearchBar;
@@ -87,11 +87,7 @@ pub fn PostListPage() -> impl IntoView {
     });
 
     let select_all = move |_| {
-        let all_ids: HashSet<i64> = post_data
-            .get_untracked()
-            .iter()
-            .filter_map(|p| p.id)
-            .collect();
+        let all_ids: HashSet<i64> = post_data.get_untracked().iter().filter_map(|p| p.id).collect();
         selected.set(all_ids);
     };
 
@@ -119,17 +115,13 @@ pub fn PostListPage() -> impl IntoView {
 
         leptos::task::spawn_local(async move {
             let mut errors = Vec::new();
-            for post in data.iter().filter(|p| p.id.map_or(false, |id| sel.contains(&id))) {
+            for post in data.iter().filter(|p| p.id.is_some_and(|id| sel.contains(&id))) {
                 let id = post.id.unwrap();
                 let version = post.version.clone().unwrap_or_default();
                 let mut existing: Vec<String> = post
                     .tags
                     .as_ref()
-                    .map(|tags| {
-                        tags.iter()
-                            .flat_map(|t| t.names.first().cloned())
-                            .collect()
-                    })
+                    .map(|tags| tags.iter().flat_map(|t| t.names.first().cloned()).collect())
                     .unwrap_or_default();
                 for tag in &tags_to_add {
                     if !existing.iter().any(|t| t.eq_ignore_ascii_case(tag)) {
@@ -180,7 +172,7 @@ pub fn PostListPage() -> impl IntoView {
 
         leptos::task::spawn_local(async move {
             let mut errors = Vec::new();
-            for post in data.iter().filter(|p| p.id.map_or(false, |id| sel.contains(&id))) {
+            for post in data.iter().filter(|p| p.id.is_some_and(|id| sel.contains(&id))) {
                 let id = post.id.unwrap();
                 let version = post.version.clone().unwrap_or_default();
                 let body = UpdatePostBody {
@@ -221,7 +213,7 @@ pub fn PostListPage() -> impl IntoView {
 
         leptos::task::spawn_local(async move {
             let mut errors = Vec::new();
-            for post in data.iter().filter(|p| p.id.map_or(false, |id| sel.contains(&id))) {
+            for post in data.iter().filter(|p| p.id.is_some_and(|id| sel.contains(&id))) {
                 let id = post.id.unwrap();
                 let version = post.version.clone().unwrap_or_default();
                 let body = DeleteBody { version };
@@ -257,15 +249,12 @@ pub fn PostListPage() -> impl IntoView {
         let limit = params.get_untracked().limit;
 
         leptos::task::spawn_local(async move {
-            match client.get_posts(&query, offset, limit, FIELDS).await {
-                Ok(data) => {
-                    let new_count = data.results.len() as i64;
-                    accumulated.update(|v| v.extend(data.results.clone()));
-                    post_data.update(|v| v.extend(data.results));
-                    loaded_up_to.set(offset + new_count);
-                    total_results.set(data.total);
-                }
-                Err(_) => {}
+            if let Ok(data) = client.get_posts(&query, offset, limit, FIELDS).await {
+                let new_count = data.results.len() as i64;
+                accumulated.update(|v| v.extend(data.results.clone()));
+                post_data.update(|v| v.extend(data.results));
+                loaded_up_to.set(offset + new_count);
+                total_results.set(data.total);
             }
             loading_more.set(false);
         });
@@ -273,20 +262,23 @@ pub fn PostListPage() -> impl IntoView {
 
     // Set up scroll listener for endless scroll mode
     if endless {
-        setup_scroll_listener(loading_more, has_more, move || load_more());
+        setup_scroll_listener(loading_more, has_more, load_more);
     }
 
     // P — focus first post thumbnail
     let shortcuts = expect_context::<KeyboardShortcuts>();
-    shortcuts.register("p", Callback::new(move |()| {
-        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
-            if let Some(el) = doc.query_selector(".post-thumbnail a").ok().flatten() {
-                if let Ok(link) = el.dyn_into::<web_sys::HtmlElement>() {
-                    let _ = link.focus();
+    shortcuts.register(
+        "p",
+        Callback::new(move |()| {
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                if let Some(el) = doc.query_selector(".post-thumbnail a").ok().flatten() {
+                    if let Ok(link) = el.dyn_into::<web_sys::HtmlElement>() {
+                        let _ = link.focus();
+                    }
                 }
             }
-        }
-    }));
+        }),
+    );
     on_cleanup(move || {
         shortcuts.unregister("p");
     });

@@ -11,13 +11,7 @@ use crate::api::{ApiClient, ApiError};
 pub fn PoolEditPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let params = use_params_map();
-    let pool_id = move || {
-        params
-            .get()
-            .get("id")
-            .and_then(|s| s.parse::<i64>().ok())
-            .unwrap_or(0)
-    };
+    let pool_id = move || params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);
 
     let (loading, set_loading) = signal(true);
     let (load_error, set_load_error) = signal(false);
@@ -83,7 +77,11 @@ pub fn PoolEditPage() -> impl IntoView {
             if s.trim().is_empty() {
                 Some(vec![])
             } else {
-                match s.split(',').map(|p| p.trim().parse::<i64>()).collect::<Result<Vec<_>, _>>() {
+                match s
+                    .split(',')
+                    .map(|p| p.trim().parse::<i64>())
+                    .collect::<Result<Vec<_>, _>>()
+                {
                     Ok(ids) => Some(ids),
                     Err(_) => {
                         set_error_msg.set(Some("Invalid post IDs.".into()));

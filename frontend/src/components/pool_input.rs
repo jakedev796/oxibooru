@@ -10,11 +10,7 @@ use crate::api::ApiClient;
 /// Chip-based multi-pool input with debounced autocomplete.
 /// Each pool is represented as (id, display_name).
 #[component]
-pub fn PoolInput(
-    pools: RwSignal<Vec<(i64, String)>>,
-    #[prop(optional, into)]
-    label: String,
-) -> impl IntoView {
+pub fn PoolInput(pools: RwSignal<Vec<(i64, String)>>, #[prop(optional, into)] label: String) -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let (query, set_query) = signal(String::new());
     let (results, set_results) = signal(Vec::<PoolInfo>::new());
@@ -54,12 +50,7 @@ pub fn PoolInput(
 
     let do_select = move |pool: &PoolInfo| {
         let pool_id = pool.id.unwrap_or(0);
-        let name = pool
-            .names
-            .as_ref()
-            .and_then(|n| n.first())
-            .cloned()
-            .unwrap_or_default();
+        let name = pool.names.as_ref().and_then(|n| n.first()).cloned().unwrap_or_default();
         pools.update(|list| {
             if !list.iter().any(|(id, _)| *id == pool_id) {
                 list.push((pool_id, name));
@@ -70,43 +61,41 @@ pub fn PoolInput(
         set_show_dropdown.set(false);
     };
 
-    let on_keydown = move |ev: web_sys::KeyboardEvent| {
-        match ev.key().as_str() {
-            "ArrowDown" => {
-                ev.prevent_default();
-                let len = results.get_untracked().len();
-                if len > 0 {
-                    set_selected_index.update(|idx| {
-                        *idx = Some(match *idx {
-                            Some(i) => (i + 1).min(len - 1),
-                            None => 0,
-                        });
-                    });
-                }
-            }
-            "ArrowUp" => {
-                ev.prevent_default();
+    let on_keydown = move |ev: web_sys::KeyboardEvent| match ev.key().as_str() {
+        "ArrowDown" => {
+            ev.prevent_default();
+            let len = results.get_untracked().len();
+            if len > 0 {
                 set_selected_index.update(|idx| {
-                    *idx = match *idx {
-                        Some(0) | None => None,
-                        Some(i) => Some(i - 1),
-                    };
+                    *idx = Some(match *idx {
+                        Some(i) => (i + 1).min(len - 1),
+                        None => 0,
+                    });
                 });
             }
-            "Enter" => {
-                ev.prevent_default();
-                if let Some(i) = selected_index.get_untracked() {
-                    let items = results.get_untracked();
-                    if let Some(pool) = items.get(i) {
-                        do_select(pool);
-                    }
+        }
+        "ArrowUp" => {
+            ev.prevent_default();
+            set_selected_index.update(|idx| {
+                *idx = match *idx {
+                    Some(0) | None => None,
+                    Some(i) => Some(i - 1),
+                };
+            });
+        }
+        "Enter" => {
+            ev.prevent_default();
+            if let Some(i) = selected_index.get_untracked() {
+                let items = results.get_untracked();
+                if let Some(pool) = items.get(i) {
+                    do_select(pool);
                 }
             }
-            "Escape" => {
-                set_show_dropdown.set(false);
-            }
-            _ => {}
         }
+        "Escape" => {
+            set_show_dropdown.set(false);
+        }
+        _ => {}
     };
 
     let on_blur = move |_| {

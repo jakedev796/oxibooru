@@ -14,9 +14,7 @@ pub fn TagViewPage() -> impl IntoView {
     let loading = expect_context::<LoadingState>();
     let params = use_params_map();
 
-    let tag_name = Memo::new(move |_| {
-        params.get().get("name").unwrap_or_default()
-    });
+    let tag_name = Memo::new(move |_| params.get().get("name").unwrap_or_default());
 
     let tag = LocalResource::new(move || {
         let client = api.get();

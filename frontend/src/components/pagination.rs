@@ -12,7 +12,7 @@ pub fn Pagination(
     #[prop(into)] href_for_page: Callback<(i64, i64), String>,
 ) -> impl IntoView {
     if total == 0 || limit == 0 {
-        return view! {}.into_any();
+        return ().into_any();
     }
 
     let current_page = offset / limit + 1;

@@ -15,12 +15,7 @@ pub fn UserEditPage() -> impl IntoView {
     let params = use_params_map();
     let navigate = use_navigate();
 
-    let username = move || {
-        params
-            .get()
-            .get("name")
-            .unwrap_or_default()
-    };
+    let username = move || params.get().get("name").unwrap_or_default();
 
     // Loading state
     let (loading, set_loading) = signal(true);
@@ -54,11 +49,7 @@ pub fn UserEditPage() -> impl IntoView {
                             .and_then(|e| e.clone())
                             .unwrap_or_default(),
                     );
-                    set_new_rank.set(
-                        user.rank
-                            .map(|r| format!("{:?}", r).to_lowercase())
-                            .unwrap_or_default(),
-                    );
+                    set_new_rank.set(user.rank.map(|r| format!("{:?}", r).to_lowercase()).unwrap_or_default());
                     set_new_avatar_style.set(
                         user.avatar_style
                             .map(|a| format!("{:?}", a).to_lowercase())
@@ -92,21 +83,37 @@ pub fn UserEditPage() -> impl IntoView {
             version: version.get_untracked(),
             name: {
                 let n = new_name.get_untracked();
-                if n != name { Some(n) } else { None }
+                if n != name {
+                    Some(n)
+                } else {
+                    None
+                }
             },
             password: {
                 let p = new_password.get_untracked();
-                if p.is_empty() { None } else { Some(p) }
+                if p.is_empty() {
+                    None
+                } else {
+                    Some(p)
+                }
             },
             email: {
                 let e = new_email.get_untracked();
-                if e.is_empty() { Some(None) } else { Some(Some(e)) }
+                if e.is_empty() {
+                    Some(None)
+                } else {
+                    Some(Some(e))
+                }
             },
             rank: parse_rank(&new_rank.get_untracked()),
             avatar_style: parse_avatar_style(&new_avatar_style.get_untracked()),
             avatar_url: {
                 let url = new_avatar_url.get_untracked();
-                if url.is_empty() { None } else { Some(url) }
+                if url.is_empty() {
+                    None
+                } else {
+                    Some(url)
+                }
             },
         };
 
@@ -122,10 +129,7 @@ pub fn UserEditPage() -> impl IntoView {
                     set_new_password.set(String::new());
 
                     if let Some(new_n) = renamed {
-                        navigate(
-                            &format!("/user/{}/edit", url_encode(&new_n)),
-                            Default::default(),
-                        );
+                        navigate(&format!("/user/{}/edit", url_encode(&new_n)), Default::default());
                     }
                 }
                 Err(e) => {

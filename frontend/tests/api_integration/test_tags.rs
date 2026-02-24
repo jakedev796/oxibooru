@@ -52,10 +52,7 @@ async fn get_single_tag() {
 
     let tag: TagInfo = resp.json().await.expect("failed to deserialize TagInfo");
     assert!(tag.names.is_some(), "tag should have names");
-    assert!(
-        tag.names.as_ref().unwrap().contains(tag_name),
-        "tag names should contain the queried name"
-    );
+    assert!(tag.names.as_ref().unwrap().contains(tag_name), "tag names should contain the queried name");
 }
 
 /// POST /tags without auth should fail.
@@ -73,10 +70,7 @@ async fn create_tag_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated POST /tags should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated POST /tags should fail, got {status}");
 }
 
 /// PUT /tag/{name} without auth should fail.
@@ -104,10 +98,7 @@ async fn update_tag_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated PUT /tag/{tag_name} should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated PUT /tag/{tag_name} should fail, got {status}");
 }
 
 /// DELETE /tag/{name} without auth should fail.
@@ -132,10 +123,7 @@ async fn delete_tag_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated DELETE /tag/{tag_name} should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated DELETE /tag/{tag_name} should fail, got {status}");
 }
 
 /// POST /tag-merge without auth should fail.
@@ -155,10 +143,7 @@ async fn merge_tags_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated POST /tag-merge should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated POST /tag-merge should fail, got {status}");
 }
 
 /// GET /tag-siblings/{name} should return an unpaged response.
@@ -179,8 +164,10 @@ async fn get_tag_siblings() {
     let resp = reqwest::get(&url).await.expect("backend not reachable");
     assert!(resp.status().is_success(), "GET /tag-siblings/{tag_name} returned {}", resp.status());
 
-    let siblings: UnpagedResponse<TagSibling> =
-        resp.json().await.expect("failed to deserialize UnpagedResponse<TagSibling>");
+    let siblings: UnpagedResponse<TagSibling> = resp
+        .json()
+        .await
+        .expect("failed to deserialize UnpagedResponse<TagSibling>");
     // Siblings may be empty, but the response should parse
     for sibling in &siblings.results {
         assert!(sibling.occurrences >= 0, "occurrences should be non-negative");

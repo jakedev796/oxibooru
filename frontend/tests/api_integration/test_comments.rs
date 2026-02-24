@@ -12,8 +12,10 @@ async fn get_comments_returns_paged_response() {
         .expect("backend not reachable — is it running on port 6666?");
     assert!(resp.status().is_success(), "GET /comments returned {}", resp.status());
 
-    let page: PagedResponse<CommentInfo> =
-        resp.json().await.expect("failed to deserialize PagedResponse<CommentInfo>");
+    let page: PagedResponse<CommentInfo> = resp
+        .json()
+        .await
+        .expect("failed to deserialize PagedResponse<CommentInfo>");
     assert!(page.total >= 0);
     assert!(page.limit == 5);
     assert!(page.results.len() <= 5);
@@ -47,10 +49,7 @@ async fn create_comment_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated POST /comments should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated POST /comments should fail, got {status}");
 }
 
 /// PUT /comment/{id}/score without auth should fail.

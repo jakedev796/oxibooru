@@ -12,13 +12,7 @@ pub fn PostMergePage() -> impl IntoView {
     let params = use_params_map();
     let navigate = use_navigate();
 
-    let post_id = move || {
-        params
-            .get()
-            .get("id")
-            .and_then(|s| s.parse::<i64>().ok())
-            .unwrap_or(0)
-    };
+    let post_id = move || params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);
 
     // Loading state for source post version
     let (loading, set_loading) = signal(true);

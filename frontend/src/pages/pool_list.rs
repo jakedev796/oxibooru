@@ -62,21 +62,18 @@ pub fn PoolListPage() -> impl IntoView {
         let limit = params.get_untracked().limit;
 
         leptos::task::spawn_local(async move {
-            match client.get_pools(&query, offset, limit, FIELDS).await {
-                Ok(data) => {
-                    let new_count = data.results.len() as i64;
-                    accumulated.update(|v| v.extend(data.results));
-                    loaded_up_to.set(offset + new_count);
-                    total_results.set(data.total);
-                }
-                Err(_) => {}
+            if let Ok(data) = client.get_pools(&query, offset, limit, FIELDS).await {
+                let new_count = data.results.len() as i64;
+                accumulated.update(|v| v.extend(data.results));
+                loaded_up_to.set(offset + new_count);
+                total_results.set(data.total);
             }
             loading_more.set(false);
         });
     };
 
     if endless {
-        setup_scroll_listener(loading_more, has_more, move || load_more());
+        setup_scroll_listener(loading_more, has_more, load_more);
     }
 
     view! {
@@ -169,14 +166,10 @@ pub fn PoolListPage() -> impl IntoView {
 
 fn render_pool_row(pool: PoolInfo) -> impl IntoView {
     let id = pool.id.unwrap_or(0);
-    let primary_name = pool.names.as_ref()
-        .and_then(|n| n.first().cloned())
-        .unwrap_or_default();
+    let primary_name = pool.names.as_ref().and_then(|n| n.first().cloned()).unwrap_or_default();
     let category = pool.category.clone().unwrap_or_default();
     let post_count = pool.post_count.unwrap_or(0);
-    let created = pool.creation_time.as_deref()
-        .map(format_time_short)
-        .unwrap_or_default();
+    let created = pool.creation_time.as_deref().map(format_time_short).unwrap_or_default();
     let href = format!("/pool/{id}");
     let row_class = format!("pool-category-{category}");
     view! {

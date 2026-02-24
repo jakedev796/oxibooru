@@ -31,10 +31,5 @@ async fn info_with_invalid_credentials_returns_401() {
         .send()
         .await
         .expect("backend not reachable");
-    assert_eq!(
-        resp.status().as_u16(),
-        401,
-        "invalid credentials should return 401, got {}",
-        resp.status()
-    );
+    assert_eq!(resp.status().as_u16(), 401, "invalid credentials should return 401, got {}", resp.status());
 }

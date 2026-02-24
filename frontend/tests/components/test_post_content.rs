@@ -7,12 +7,7 @@ use oxibooru_frontend::components::post_content::PostContent;
 use oxibooru_shared::enums::PostType;
 
 /// Helper: mount PostContent into a test container.
-fn mount_content(
-    url: &str,
-    post_type: PostType,
-    fit_mode: &str,
-    flags: Vec<String>,
-) -> web_sys::Element {
+fn mount_content(url: &str, post_type: PostType, fit_mode: &str, flags: Vec<String>) -> web_sys::Element {
     let document = web_sys::window().unwrap().document().unwrap();
     let container = document.create_element("div").unwrap();
     document.body().unwrap().append_child(&container).unwrap();

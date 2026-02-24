@@ -12,13 +12,7 @@ pub fn PoolDeletePage() -> impl IntoView {
     let params = use_params_map();
     let navigate = use_navigate();
 
-    let pool_id = move || {
-        params
-            .get()
-            .get("id")
-            .and_then(|s| s.parse::<i64>().ok())
-            .unwrap_or(0)
-    };
+    let pool_id = move || params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);
 
     let (version, set_version) = signal(String::new());
     let (loading, set_loading) = signal(true);

@@ -1,11 +1,7 @@
 use leptos::prelude::*;
 
 #[component]
-pub fn FavoriteWidget(
-    favorited: RwSignal<bool>,
-    count: RwSignal<i64>,
-    on_toggle: Callback<bool>,
-) -> impl IntoView {
+pub fn FavoriteWidget(favorited: RwSignal<bool>, count: RwSignal<i64>, on_toggle: Callback<bool>) -> impl IntoView {
     view! {
         <button
             class="favorite-widget"

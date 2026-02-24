@@ -15,6 +15,12 @@ pub struct KeyboardShortcuts {
     handlers: RwSignal<HashMap<String, Callback<()>>>,
 }
 
+impl Default for KeyboardShortcuts {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl KeyboardShortcuts {
     pub fn new() -> Self {
         Self {

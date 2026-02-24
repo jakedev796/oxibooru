@@ -90,10 +90,7 @@ pub fn TagMergePage() -> impl IntoView {
         leptos::task::spawn_local(async move {
             match client.merge_tags(&body).await {
                 Ok(merged) => {
-                    let name = merged
-                        .names
-                        .and_then(|n| n.into_iter().next())
-                        .unwrap_or_default();
+                    let name = merged.names.and_then(|n| n.into_iter().next()).unwrap_or_default();
                     let encoded = js_sys::encode_uri_component(&name);
                     nav(&format!("/tag/{encoded}"), Default::default());
                 }

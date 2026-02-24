@@ -119,10 +119,7 @@ pub fn TagEditPage() -> impl IntoView {
             leptos::task::spawn_local(async move {
                 match client.create_tag(&body).await {
                     Ok(tag) => {
-                        let new_name = tag
-                            .names
-                            .and_then(|n| n.into_iter().next())
-                            .unwrap_or_default();
+                        let new_name = tag.names.and_then(|n| n.into_iter().next()).unwrap_or_default();
                         let encoded = js_sys::encode_uri_component(&new_name);
                         nav(&format!("/tag/{encoded}"), Default::default());
                     }
@@ -149,10 +146,7 @@ pub fn TagEditPage() -> impl IntoView {
                         set_success_msg.set(Some("Tag updated.".into()));
                         set_submitting.set(false);
                         // If name changed, navigate
-                        let new_name = updated
-                            .names
-                            .and_then(|n| n.into_iter().next())
-                            .unwrap_or(name.clone());
+                        let new_name = updated.names.and_then(|n| n.into_iter().next()).unwrap_or(name.clone());
                         if new_name != name {
                             let encoded = js_sys::encode_uri_component(&new_name);
                             nav(&format!("/tag/{encoded}/edit"), Default::default());

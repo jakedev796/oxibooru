@@ -61,21 +61,18 @@ pub fn CommentsPage() -> impl IntoView {
         let limit = p.limit;
 
         leptos::task::spawn_local(async move {
-            match client.get_posts(&query, offset, limit, FIELDS).await {
-                Ok(data) => {
-                    let new_count = data.results.len() as i64;
-                    accumulated.update(|v| v.extend(data.results));
-                    loaded_up_to.set(offset + new_count);
-                    total_results.set(data.total);
-                }
-                Err(_) => {}
+            if let Ok(data) = client.get_posts(&query, offset, limit, FIELDS).await {
+                let new_count = data.results.len() as i64;
+                accumulated.update(|v| v.extend(data.results));
+                loaded_up_to.set(offset + new_count);
+                total_results.set(data.total);
             }
             loading_more.set(false);
         });
     };
 
     if endless {
-        setup_scroll_listener(loading_more, has_more, move || load_more());
+        setup_scroll_listener(loading_more, has_more, load_more);
     }
 
     view! {

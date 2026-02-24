@@ -55,33 +55,19 @@ impl ApiClient {
     }
 
     /// POST /pool (singular!).
-    pub async fn create_pool(
-        &self,
-        body: &CreatePoolBody,
-    ) -> Result<PoolInfo, ApiError> {
+    pub async fn create_pool(&self, body: &CreatePoolBody) -> Result<PoolInfo, ApiError> {
         self.post("/pool", body).await
     }
 
-    pub async fn update_pool(
-        &self,
-        id: i64,
-        body: &UpdatePoolBody,
-    ) -> Result<PoolInfo, ApiError> {
+    pub async fn update_pool(&self, id: i64, body: &UpdatePoolBody) -> Result<PoolInfo, ApiError> {
         self.put(&format!("/pool/{id}"), body).await
     }
 
-    pub async fn delete_pool(
-        &self,
-        id: i64,
-        body: &DeleteBody,
-    ) -> Result<(), ApiError> {
+    pub async fn delete_pool(&self, id: i64, body: &DeleteBody) -> Result<(), ApiError> {
         self.delete(&format!("/pool/{id}"), body).await
     }
 
-    pub async fn merge_pools(
-        &self,
-        body: &MergeBody<i64>,
-    ) -> Result<PoolInfo, ApiError> {
+    pub async fn merge_pools(&self, body: &MergeBody<i64>) -> Result<PoolInfo, ApiError> {
         self.post("/pool-merge", body).await
     }
 }

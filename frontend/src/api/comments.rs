@@ -38,36 +38,20 @@ impl ApiClient {
         .await
     }
 
-    pub async fn create_comment(
-        &self,
-        body: &CreateCommentBody,
-    ) -> Result<CommentInfo, ApiError> {
+    pub async fn create_comment(&self, body: &CreateCommentBody) -> Result<CommentInfo, ApiError> {
         self.post("/comments", body).await
     }
 
-    pub async fn update_comment(
-        &self,
-        id: i64,
-        body: &UpdateCommentBody,
-    ) -> Result<CommentInfo, ApiError> {
+    pub async fn update_comment(&self, id: i64, body: &UpdateCommentBody) -> Result<CommentInfo, ApiError> {
         self.put(&format!("/comment/{id}"), body).await
     }
 
-    pub async fn delete_comment(
-        &self,
-        id: i64,
-        body: &DeleteBody,
-    ) -> Result<(), ApiError> {
+    pub async fn delete_comment(&self, id: i64, body: &DeleteBody) -> Result<(), ApiError> {
         self.delete(&format!("/comment/{id}"), body).await
     }
 
-    pub async fn score_comment(
-        &self,
-        id: i64,
-        score: Rating,
-    ) -> Result<CommentInfo, ApiError> {
-        self.put(&format!("/comment/{id}/score"), &RatingBody { score })
-            .await
+    pub async fn score_comment(&self, id: i64, score: Rating) -> Result<CommentInfo, ApiError> {
+        self.put(&format!("/comment/{id}/score"), &RatingBody { score }).await
     }
 }
 

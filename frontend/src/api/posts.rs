@@ -111,17 +111,9 @@ impl ApiClient {
         self.get(&format!("/post/{id}"), &[]).await
     }
 
-    pub async fn get_post_around(
-        &self,
-        id: i64,
-        query: &str,
-        fields: &str,
-    ) -> Result<PostNeighbors, ApiError> {
-        self.get(
-            &format!("/post/{id}/around"),
-            &[("query", query), ("fields", fields)],
-        )
-        .await
+    pub async fn get_post_around(&self, id: i64, query: &str, fields: &str) -> Result<PostNeighbors, ApiError> {
+        self.get(&format!("/post/{id}/around"), &[("query", query), ("fields", fields)])
+            .await
     }
 
     pub async fn get_featured_post(&self) -> Result<PostInfo, ApiError> {
@@ -129,48 +121,28 @@ impl ApiClient {
     }
 
     /// POST /posts (multipart: metadata JSON + content binary).
-    pub async fn create_post(
-        &self,
-        form_data: &web_sys::FormData,
-    ) -> Result<PostInfo, ApiError> {
+    pub async fn create_post(&self, form_data: &web_sys::FormData) -> Result<PostInfo, ApiError> {
         self.post_multipart("/posts", form_data).await
     }
 
     /// PUT /post/{id} (JSON body — metadata-only update).
-    pub async fn update_post_json(
-        &self,
-        id: i64,
-        body: &UpdatePostBody,
-    ) -> Result<PostInfo, ApiError> {
+    pub async fn update_post_json(&self, id: i64, body: &UpdatePostBody) -> Result<PostInfo, ApiError> {
         self.put(&format!("/post/{id}"), body).await
     }
 
     /// PUT /post/{id} (multipart — for content/thumbnail replacement).
-    pub async fn update_post(
-        &self,
-        id: i64,
-        form_data: &web_sys::FormData,
-    ) -> Result<PostInfo, ApiError> {
+    pub async fn update_post(&self, id: i64, form_data: &web_sys::FormData) -> Result<PostInfo, ApiError> {
         self.put_multipart(&format!("/post/{id}"), form_data).await
     }
 
     /// DELETE /post/{id}.
-    pub async fn delete_post(
-        &self,
-        id: i64,
-        body: &DeleteBody,
-    ) -> Result<(), ApiError> {
+    pub async fn delete_post(&self, id: i64, body: &DeleteBody) -> Result<(), ApiError> {
         self.delete(&format!("/post/{id}"), body).await
     }
 
     /// PUT /post/{id}/score.
-    pub async fn score_post(
-        &self,
-        id: i64,
-        score: Rating,
-    ) -> Result<PostInfo, ApiError> {
-        self.put(&format!("/post/{id}/score"), &RatingBody { score })
-            .await
+    pub async fn score_post(&self, id: i64, score: Rating) -> Result<PostInfo, ApiError> {
+        self.put(&format!("/post/{id}/score"), &RatingBody { score }).await
     }
 
     /// POST /post/{id}/favorite (no body).
@@ -180,40 +152,26 @@ impl ApiClient {
 
     /// DELETE /post/{id}/favorite (no body, returns PostInfo).
     pub async fn remove_favorite(&self, id: i64) -> Result<PostInfo, ApiError> {
-        self.delete_with_response(&format!("/post/{id}/favorite"))
-            .await
+        self.delete_with_response(&format!("/post/{id}/favorite")).await
     }
 
     /// POST /post-merge.
-    pub async fn merge_posts(
-        &self,
-        body: &PostMergeBody,
-    ) -> Result<PostInfo, ApiError> {
+    pub async fn merge_posts(&self, body: &PostMergeBody) -> Result<PostInfo, ApiError> {
         self.post("/post-merge", body).await
     }
 
     /// POST /posts/reverse-search (multipart).
-    pub async fn reverse_search(
-        &self,
-        form_data: &web_sys::FormData,
-    ) -> Result<ReverseSearchResponse, ApiError> {
-        self.post_multipart("/posts/reverse-search", form_data)
-            .await
+    pub async fn reverse_search(&self, form_data: &web_sys::FormData) -> Result<ReverseSearchResponse, ApiError> {
+        self.post_multipart("/posts/reverse-search", form_data).await
     }
 
     /// POST /posts/reverse-search (JSON — for token/URL based search).
-    pub async fn reverse_search_json(
-        &self,
-        body: &ReverseSearchBody,
-    ) -> Result<ReverseSearchResponse, ApiError> {
+    pub async fn reverse_search_json(&self, body: &ReverseSearchBody) -> Result<ReverseSearchResponse, ApiError> {
         self.post("/posts/reverse-search", body).await
     }
 
     /// POST /featured-post.
-    pub async fn feature_post(
-        &self,
-        body: &FeatureBody,
-    ) -> Result<PostInfo, ApiError> {
+    pub async fn feature_post(&self, body: &FeatureBody) -> Result<PostInfo, ApiError> {
         self.post("/featured-post", body).await
     }
 }

@@ -9,14 +9,10 @@ use crate::api::ApiClient;
 pub fn CommentForm(
     post_id: i64,
     on_submit: Callback<CommentInfo>,
-    #[prop(optional)]
-    edit_comment_id: Option<i64>,
-    #[prop(optional)]
-    edit_comment_version: Option<String>,
-    #[prop(optional, into)]
-    initial_text: String,
-    #[prop(optional)]
-    on_cancel: Option<Callback<()>>,
+    #[prop(optional)] edit_comment_id: Option<i64>,
+    #[prop(optional)] edit_comment_version: Option<String>,
+    #[prop(optional, into)] initial_text: String,
+    #[prop(optional)] on_cancel: Option<Callback<()>>,
 ) -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let (text, set_text) = signal(initial_text);

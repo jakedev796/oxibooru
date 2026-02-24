@@ -27,9 +27,5 @@ async fn password_reset_invalid_token_returns_error() {
         .send()
         .await
         .expect("backend not reachable");
-    assert!(
-        resp.status().is_client_error(),
-        "invalid token should return client error, got {}",
-        resp.status()
-    );
+    assert!(resp.status().is_client_error(), "invalid token should return client error, got {}", resp.status());
 }

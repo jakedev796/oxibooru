@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 use leptos_meta::*;
-use leptos_router::components::{Router, Routes, Route};
+use leptos_router::components::{Route, Router, Routes};
 use leptos_router::path;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -11,8 +11,6 @@ use crate::components::category_styles::CategoryStyles;
 use crate::components::loading_bar::{LoadingBar, LoadingState};
 use crate::components::navigation::Navigation;
 use crate::keyboard::KeyboardShortcuts;
-use oxibooru_shared::category::{PoolCategoryInfo, TagCategoryInfo};
-use oxibooru_shared::info::PublicConfig;
 use crate::pages::comments_page::CommentsPage;
 use crate::pages::help::HelpPage;
 use crate::pages::history::HistoryPage;
@@ -20,7 +18,7 @@ use crate::pages::home::HomePage;
 use crate::pages::login::LoginPage;
 use crate::pages::logout::LogoutPage;
 use crate::pages::not_found::NotFoundPage;
-use crate::pages::password_reset::{PasswordResetPage, PasswordResetConfirmPage};
+use crate::pages::password_reset::{PasswordResetConfirmPage, PasswordResetPage};
 use crate::pages::pool_categories::PoolCategoriesPage;
 use crate::pages::pool_create::PoolCreatePage;
 use crate::pages::pool_delete::PoolDeletePage;
@@ -34,19 +32,21 @@ use crate::pages::post_merge::PostMergePage;
 use crate::pages::post_upload::PostUploadPage;
 use crate::pages::post_view::PostViewPage;
 use crate::pages::register::RegisterPage;
+use crate::pages::settings::SettingsPage;
 use crate::pages::tag_categories::TagCategoriesPage;
 use crate::pages::tag_delete::TagDeletePage;
 use crate::pages::tag_edit::TagEditPage;
 use crate::pages::tag_list::TagListPage;
 use crate::pages::tag_merge::TagMergePage;
 use crate::pages::tag_view::TagViewPage;
-use crate::pages::settings::SettingsPage;
 use crate::pages::user_delete::UserDeletePage;
 use crate::pages::user_edit::UserEditPage;
 use crate::pages::user_list::UserListPage;
 use crate::pages::user_tokens::UserTokensPage;
 use crate::pages::user_view::UserViewPage;
 use crate::settings::SettingsState;
+use oxibooru_shared::category::{PoolCategoryInfo, TagCategoryInfo};
+use oxibooru_shared::info::PublicConfig;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -88,15 +88,18 @@ pub fn App() -> impl IntoView {
     provide_context(shortcuts);
 
     // Register global shortcut: Q to focus search input
-    shortcuts.register("q", Callback::new(move |()| {
-        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
-            if let Some(el) = doc.get_element_by_id("search-input") {
-                if let Ok(input) = el.dyn_into::<web_sys::HtmlElement>() {
-                    let _ = input.focus();
+    shortcuts.register(
+        "q",
+        Callback::new(move |()| {
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                if let Some(el) = doc.get_element_by_id("search-input") {
+                    if let Ok(input) = el.dyn_into::<web_sys::HtmlElement>() {
+                        let _ = input.focus();
+                    }
                 }
             }
-        }
-    }));
+        }),
+    );
 
     // Global keydown listener
     if let Some(window) = web_sys::window() {
@@ -128,10 +131,7 @@ pub fn App() -> impl IntoView {
                 ev.prevent_default();
             }
         });
-        let _ = window.add_event_listener_with_callback(
-            "keydown",
-            handler.as_ref().unchecked_ref(),
-        );
+        let _ = window.add_event_listener_with_callback("keydown", handler.as_ref().unchecked_ref());
         handler.forget();
     }
 
@@ -154,8 +154,7 @@ pub fn App() -> impl IntoView {
     // When info loads, update auth state with privileges and server config
     Effect::new(move || {
         if let Some(Some(info)) = initial_info.get() {
-            auth.privileges
-                .set(Some(info.config.privileges.clone()));
+            auth.privileges.set(Some(info.config.privileges.clone()));
             server_config.set(Some(info.config.clone()));
             // Verify stored credentials and populate current_user
             leptos::task::spawn_local(async move {

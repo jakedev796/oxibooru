@@ -14,9 +14,7 @@ pub fn PoolViewPage() -> impl IntoView {
     let loading = expect_context::<LoadingState>();
     let params = use_params_map();
 
-    let pool_id = Memo::new(move |_| {
-        params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0)
-    });
+    let pool_id = Memo::new(move |_| params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0));
 
     let pool = LocalResource::new(move || {
         let client = api.get();

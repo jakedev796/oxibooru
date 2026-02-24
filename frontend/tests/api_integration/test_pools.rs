@@ -12,7 +12,10 @@ async fn get_pools_returns_paged_response() {
         .expect("backend not reachable — is it running on port 6666?");
     assert!(resp.status().is_success(), "GET /pools returned {}", resp.status());
 
-    let page: PagedResponse<PoolInfo> = resp.json().await.expect("failed to deserialize PagedResponse<PoolInfo>");
+    let page: PagedResponse<PoolInfo> = resp
+        .json()
+        .await
+        .expect("failed to deserialize PagedResponse<PoolInfo>");
     assert!(page.total >= 0);
     assert!(page.limit == 5);
     assert!(page.results.len() <= 5);
@@ -54,10 +57,7 @@ async fn create_pool_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated POST /pool should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated POST /pool should fail, got {status}");
 }
 
 /// PUT /pool/{id} without auth should fail.
@@ -85,10 +85,7 @@ async fn update_pool_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated PUT /pool/{pool_id} should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated PUT /pool/{pool_id} should fail, got {status}");
 }
 
 /// DELETE /pool/{id} without auth should fail.
@@ -113,10 +110,7 @@ async fn delete_pool_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated DELETE /pool/{pool_id} should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated DELETE /pool/{pool_id} should fail, got {status}");
 }
 
 /// POST /pool-merge without auth should fail.
@@ -136,8 +130,5 @@ async fn merge_pools_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated POST /pool-merge should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated POST /pool-merge should fail, got {status}");
 }

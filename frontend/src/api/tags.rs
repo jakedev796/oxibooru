@@ -62,42 +62,23 @@ impl ApiClient {
         self.get(&format!("/tag/{}", url_encode(name)), &[]).await
     }
 
-    pub async fn get_tag_siblings(
-        &self,
-        name: &str,
-    ) -> Result<UnpagedResponse<TagSibling>, ApiError> {
-        self.get(&format!("/tag-siblings/{}", url_encode(name)), &[])
-            .await
+    pub async fn get_tag_siblings(&self, name: &str) -> Result<UnpagedResponse<TagSibling>, ApiError> {
+        self.get(&format!("/tag-siblings/{}", url_encode(name)), &[]).await
     }
 
-    pub async fn create_tag(
-        &self,
-        body: &CreateTagBody,
-    ) -> Result<TagInfo, ApiError> {
+    pub async fn create_tag(&self, body: &CreateTagBody) -> Result<TagInfo, ApiError> {
         self.post("/tags", body).await
     }
 
-    pub async fn update_tag(
-        &self,
-        name: &str,
-        body: &UpdateTagBody,
-    ) -> Result<TagInfo, ApiError> {
+    pub async fn update_tag(&self, name: &str, body: &UpdateTagBody) -> Result<TagInfo, ApiError> {
         self.put(&format!("/tag/{}", url_encode(name)), body).await
     }
 
-    pub async fn delete_tag(
-        &self,
-        name: &str,
-        body: &DeleteBody,
-    ) -> Result<(), ApiError> {
-        self.delete(&format!("/tag/{}", url_encode(name)), body)
-            .await
+    pub async fn delete_tag(&self, name: &str, body: &DeleteBody) -> Result<(), ApiError> {
+        self.delete(&format!("/tag/{}", url_encode(name)), body).await
     }
 
-    pub async fn merge_tags(
-        &self,
-        body: &MergeBody<String>,
-    ) -> Result<TagInfo, ApiError> {
+    pub async fn merge_tags(&self, body: &MergeBody<String>) -> Result<TagInfo, ApiError> {
         self.post("/tag-merge", body).await
     }
 }

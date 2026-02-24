@@ -8,6 +8,12 @@ pub struct LoadingState {
     finishing: RwSignal<bool>,
 }
 
+impl Default for LoadingState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LoadingState {
     pub fn new() -> Self {
         Self {

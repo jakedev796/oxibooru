@@ -6,12 +6,12 @@ use oxibooru_shared::comment::CommentInfo;
 use oxibooru_shared::enums::{PostSafety, PostType, Rating};
 
 use crate::api::ApiClient;
-use crate::components::api_error::ApiErrorMessage;
-use crate::components::loading_bar::LoadingState;
 use crate::auth::AuthState;
+use crate::components::api_error::ApiErrorMessage;
 use crate::components::comment_form::CommentForm;
 use crate::components::comment_list::CommentList;
 use crate::components::favorite_widget::FavoriteWidget;
+use crate::components::loading_bar::LoadingState;
 use crate::components::markdown::Markdown;
 use crate::components::post_content::PostContent;
 use crate::components::post_notes::PostNotesOverlay;
@@ -40,9 +40,7 @@ pub fn PostViewPage() -> impl IntoView {
     let settings = expect_context::<SettingsState>();
     let params = use_params_map();
 
-    let post_id = Memo::new(move |_| {
-        params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0)
-    });
+    let post_id = Memo::new(move |_| params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0));
 
     let post = LocalResource::new(move || {
         let client = api.get();
@@ -83,22 +81,28 @@ pub fn PostViewPage() -> impl IntoView {
     let navigate = use_navigate();
 
     // F — cycle fit mode
-    shortcuts.register("f", Callback::new(move |()| {
-        let current = fit_mode.get_untracked();
-        let idx = FIT_MODES.iter().position(|m| *m == current).unwrap_or(0);
-        let next = FIT_MODES[(idx + 1) % FIT_MODES.len()].to_string();
-        fit_mode.set(next.clone());
-        settings.update(|s| s.fit_mode = next);
-    }));
+    shortcuts.register(
+        "f",
+        Callback::new(move |()| {
+            let current = fit_mode.get_untracked();
+            let idx = FIT_MODES.iter().position(|m| *m == current).unwrap_or(0);
+            let next = FIT_MODES[(idx + 1) % FIT_MODES.len()].to_string();
+            fit_mode.set(next.clone());
+            settings.update(|s| s.fit_mode = next);
+        }),
+    );
 
     // E — go to edit page
     let nav_edit = navigate.clone();
-    shortcuts.register("e", Callback::new(move |()| {
-        let id = post_id.get_untracked();
-        if id > 0 {
-            nav_edit(&format!("/post/{id}/edit"), NavigateOptions::default());
-        }
-    }));
+    shortcuts.register(
+        "e",
+        Callback::new(move |()| {
+            let id = post_id.get_untracked();
+            if id > 0 {
+                nav_edit(&format!("/post/{id}/edit"), NavigateOptions::default());
+            }
+        }),
+    );
 
     // A / ArrowLeft — previous post
     let nav_prev = navigate.clone();

@@ -45,21 +45,18 @@ pub fn HistoryPage() -> impl IntoView {
         let limit = params.get_untracked().limit;
 
         leptos::task::spawn_local(async move {
-            match client.get_snapshots(offset, limit).await {
-                Ok(data) => {
-                    let new_count = data.results.len() as i64;
-                    accumulated.update(|v| v.extend(data.results));
-                    loaded_up_to.set(offset + new_count);
-                    total_results.set(data.total);
-                }
-                Err(_) => {}
+            if let Ok(data) = client.get_snapshots(offset, limit).await {
+                let new_count = data.results.len() as i64;
+                accumulated.update(|v| v.extend(data.results));
+                loaded_up_to.set(offset + new_count);
+                total_results.set(data.total);
             }
             loading_more.set(false);
         });
     };
 
     if endless {
-        setup_scroll_listener(loading_more, has_more, move || load_more());
+        setup_scroll_listener(loading_more, has_more, load_more);
     }
 
     view! {
@@ -157,18 +154,14 @@ pub fn HistoryPage() -> impl IntoView {
 }
 
 fn render_snapshot_row(snap: SnapshotInfo) -> impl IntoView {
-    let time = snap.time.as_deref()
-        .map(format_time_short)
-        .unwrap_or_default();
-    let user_name = snap.user.flatten()
+    let time = snap.time.as_deref().map(format_time_short).unwrap_or_default();
+    let user_name = snap
+        .user
+        .flatten()
         .map(|u| u.name)
         .unwrap_or_else(|| "Anonymous".to_string());
-    let operation = snap.operation
-        .map(|o| format!("{o:?}"))
-        .unwrap_or_default();
-    let resource_type = snap.resource_type
-        .map(|t| format!("{t:?}"))
-        .unwrap_or_default();
+    let operation = snap.operation.map(|o| format!("{o:?}")).unwrap_or_default();
+    let resource_type = snap.resource_type.map(|t| format!("{t:?}")).unwrap_or_default();
     let resource_id = snap.resource_id.unwrap_or_default();
     let link = resource_link(&resource_type, &resource_id);
     let user_href = format!("/user/{user_name}");

@@ -28,12 +28,8 @@ pub struct UpdateUserTokenBody {
 }
 
 impl ApiClient {
-    pub async fn get_user_tokens(
-        &self,
-        username: &str,
-    ) -> Result<UnpagedResponse<UserTokenInfo>, ApiError> {
-        self.get(&format!("/user-tokens/{}", url_encode(username)), &[])
-            .await
+    pub async fn get_user_tokens(&self, username: &str) -> Result<UnpagedResponse<UserTokenInfo>, ApiError> {
+        self.get(&format!("/user-tokens/{}", url_encode(username)), &[]).await
     }
 
     pub async fn create_user_token(
@@ -41,8 +37,7 @@ impl ApiClient {
         username: &str,
         body: &CreateUserTokenBody,
     ) -> Result<UserTokenInfo, ApiError> {
-        self.post(&format!("/user-token/{}", url_encode(username)), body)
-            .await
+        self.post(&format!("/user-token/{}", url_encode(username)), body).await
     }
 
     pub async fn update_user_token(
@@ -51,23 +46,13 @@ impl ApiClient {
         token: &str,
         body: &UpdateUserTokenBody,
     ) -> Result<UserTokenInfo, ApiError> {
-        self.put(
-            &format!("/user-token/{}/{}", url_encode(username), url_encode(token)),
-            body,
-        )
-        .await
+        self.put(&format!("/user-token/{}/{}", url_encode(username), url_encode(token)), body)
+            .await
     }
 
-    pub async fn delete_user_token(
-        &self,
-        username: &str,
-        token: &str,
-    ) -> Result<(), ApiError> {
-        self.delete(
-            &format!("/user-token/{}/{}", url_encode(username), url_encode(token)),
-            &serde_json::json!({}),
-        )
-        .await
+    pub async fn delete_user_token(&self, username: &str, token: &str) -> Result<(), ApiError> {
+        self.delete(&format!("/user-token/{}/{}", url_encode(username), url_encode(token)), &serde_json::json!({}))
+            .await
     }
 }
 

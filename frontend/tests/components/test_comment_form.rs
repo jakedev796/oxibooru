@@ -5,10 +5,10 @@ wasm_bindgen_test_configure!(run_in_browser);
 use gloo_storage::{LocalStorage, Storage};
 use leptos::prelude::*;
 use leptos_router::components::Router;
-use oxibooru_shared::comment::CommentInfo;
 use oxibooru_frontend::api::ApiClient;
 use oxibooru_frontend::auth::AuthState;
 use oxibooru_frontend::components::comment_form::CommentForm;
+use oxibooru_shared::comment::CommentInfo;
 
 /// Helper: mount CommentForm in create mode.
 fn mount_comment_form(post_id: i64) -> web_sys::Element {

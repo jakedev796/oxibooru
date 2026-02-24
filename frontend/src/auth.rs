@@ -26,16 +26,12 @@ impl AuthState {
         };
 
         // Restore credentials from localStorage
-        if let (Ok(username), Ok(password)) = (
-            LocalStorage::get::<String>(STORAGE_KEY_USERNAME),
-            LocalStorage::get::<String>(STORAGE_KEY_PASSWORD),
-        ) {
+        if let (Ok(username), Ok(password)) =
+            (LocalStorage::get::<String>(STORAGE_KEY_USERNAME), LocalStorage::get::<String>(STORAGE_KEY_PASSWORD))
+        {
             if !username.is_empty() && !password.is_empty() {
                 api.update(|client| {
-                    client.set_credentials(Some(Credentials::Basic {
-                        username,
-                        password,
-                    }));
+                    client.set_credentials(Some(Credentials::Basic { username, password }));
                 });
             }
         }
@@ -45,11 +41,7 @@ impl AuthState {
 
     /// Log in with username and password.
     /// Verifies credentials via `/info?bump-login=true`, then fetches the user profile.
-    pub async fn login(
-        &self,
-        username: String,
-        password: String,
-    ) -> Result<InfoResponse, ApiError> {
+    pub async fn login(&self, username: String, password: String) -> Result<InfoResponse, ApiError> {
         // Set credentials on the API client
         let creds = Credentials::Basic {
             username: username.clone(),

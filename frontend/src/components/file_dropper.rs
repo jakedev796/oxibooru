@@ -4,12 +4,9 @@ use leptos::prelude::*;
 #[component]
 pub fn FileDropper(
     on_file: Callback<web_sys::File>,
-    #[prop(optional)]
-    on_url: Option<Callback<String>>,
-    #[prop(optional, into)]
-    label: String,
-    #[prop(optional, into)]
-    accept: String,
+    #[prop(optional)] on_url: Option<Callback<String>>,
+    #[prop(optional, into)] label: String,
+    #[prop(optional, into)] accept: String,
 ) -> impl IntoView {
     let (dragging, set_dragging) = signal(false);
     let (file_name, set_file_name) = signal(Option::<String>::None);
@@ -20,7 +17,7 @@ pub fn FileDropper(
 
     let on_click = move |_| {
         if let Some(input) = input_ref.get() {
-            let _ = input.click();
+            input.click();
         }
     };
 

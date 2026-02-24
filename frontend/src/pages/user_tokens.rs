@@ -12,12 +12,7 @@ pub fn UserTokensPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let params = use_params_map();
 
-    let username = move || {
-        params
-            .get()
-            .get("name")
-            .unwrap_or_default()
-    };
+    let username = move || params.get().get("name").unwrap_or_default();
 
     // Tokens list
     let (tokens, set_tokens) = signal(Vec::<UserTokenInfo>::new());
@@ -57,7 +52,11 @@ pub fn UserTokensPage() -> impl IntoView {
             enabled: Some(true),
             note: {
                 let n = new_note.get_untracked();
-                if n.is_empty() { None } else { Some(n) }
+                if n.is_empty() {
+                    None
+                } else {
+                    Some(n)
+                }
             },
             expiration_time: None,
         };
@@ -153,10 +152,7 @@ fn TokenRow(
     let note = token.note.clone().unwrap_or_default();
     let enabled = token.enabled.unwrap_or(false);
     let creation_time = token.creation_time.clone().unwrap_or_default();
-    let expiration_time = token
-        .expiration_time
-        .flatten()
-        .unwrap_or_else(|| "Never".to_string());
+    let expiration_time = token.expiration_time.flatten().unwrap_or_else(|| "Never".to_string());
     let version = token.version.clone().unwrap_or_default();
 
     let token_id = token_value.clone();

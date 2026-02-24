@@ -9,12 +9,7 @@ pub fn Navigation() -> impl IntoView {
 
     let is_logged_in = move || auth.current_user.get().is_some();
 
-    let username = move || -> String {
-        auth.current_user
-            .get()
-            .and_then(|u| u.name)
-            .unwrap_or_default()
-    };
+    let username = move || -> String { auth.current_user.get().and_then(|u| u.name).unwrap_or_default() };
 
     view! {
         <nav class="top-navigation">

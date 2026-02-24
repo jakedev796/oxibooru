@@ -6,12 +6,8 @@ use leptos_router::hooks::use_params_map;
 pub fn HelpPage() -> impl IntoView {
     let params = use_params_map();
 
-    let section = Memo::new(move |_| {
-        params.get().get("section").unwrap_or_else(|| "about".to_string())
-    });
-    let subsection = Memo::new(move |_| {
-        params.get().get("subsection").unwrap_or_default()
-    });
+    let section = Memo::new(move |_| params.get().get("section").unwrap_or_else(|| "about".to_string()));
+    let subsection = Memo::new(move |_| params.get().get("subsection").unwrap_or_default());
 
     view! {
         <Title text="Help" />

@@ -12,8 +12,10 @@ async fn get_snapshots_returns_paged_response() {
         .expect("backend not reachable — is it running on port 6666?");
     assert!(resp.status().is_success(), "GET /snapshots returned {}", resp.status());
 
-    let page: PagedResponse<SnapshotInfo> =
-        resp.json().await.expect("failed to deserialize PagedResponse<SnapshotInfo>");
+    let page: PagedResponse<SnapshotInfo> = resp
+        .json()
+        .await
+        .expect("failed to deserialize PagedResponse<SnapshotInfo>");
     assert!(page.total >= 0);
     assert!(page.limit == 5);
     assert!(page.results.len() <= 5);

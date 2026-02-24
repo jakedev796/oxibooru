@@ -55,7 +55,11 @@ pub fn PoolCreatePage() -> impl IntoView {
             if s.trim().is_empty() {
                 None
             } else {
-                match s.split(',').map(|p| p.trim().parse::<i64>()).collect::<Result<Vec<_>, _>>() {
+                match s
+                    .split(',')
+                    .map(|p| p.trim().parse::<i64>())
+                    .collect::<Result<Vec<_>, _>>()
+                {
                     Ok(ids) => Some(ids),
                     Err(_) => {
                         set_error_msg.set(Some("Invalid post IDs.".into()));

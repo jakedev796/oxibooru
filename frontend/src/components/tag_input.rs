@@ -4,11 +4,7 @@ use crate::components::tag_autocomplete::TagAutocomplete;
 
 /// Chip-based multi-tag input with autocomplete for adding tags.
 #[component]
-pub fn TagInput(
-    tags: RwSignal<Vec<String>>,
-    #[prop(optional, into)]
-    label: String,
-) -> impl IntoView {
+pub fn TagInput(tags: RwSignal<Vec<String>>, #[prop(optional, into)] label: String) -> impl IntoView {
     let on_select = Callback::new(move |name: String| {
         tags.update(|list| {
             if !list.iter().any(|t| t.eq_ignore_ascii_case(&name)) {

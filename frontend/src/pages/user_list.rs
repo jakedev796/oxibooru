@@ -60,21 +60,18 @@ pub fn UserListPage() -> impl IntoView {
         let limit = params.get_untracked().limit;
 
         leptos::task::spawn_local(async move {
-            match client.get_users(&query, offset, limit).await {
-                Ok(data) => {
-                    let new_count = data.results.len() as i64;
-                    accumulated.update(|v| v.extend(data.results));
-                    loaded_up_to.set(offset + new_count);
-                    total_results.set(data.total);
-                }
-                Err(_) => {}
+            if let Ok(data) = client.get_users(&query, offset, limit).await {
+                let new_count = data.results.len() as i64;
+                accumulated.update(|v| v.extend(data.results));
+                loaded_up_to.set(offset + new_count);
+                total_results.set(data.total);
             }
             loading_more.set(false);
         });
     };
 
     if endless {
-        setup_scroll_listener(loading_more, has_more, move || load_more());
+        setup_scroll_listener(loading_more, has_more, load_more);
     }
 
     view! {
@@ -149,9 +146,7 @@ fn render_user_card(user: UserInfo) -> impl IntoView {
     let name = user.name.clone().unwrap_or_default();
     let avatar_url = user.avatar_url.clone().unwrap_or_default();
     let rank = user.rank.map(|r| format!("{r:?}").to_lowercase()).unwrap_or_default();
-    let created = user.creation_time.as_deref()
-        .map(format_time_short)
-        .unwrap_or_default();
+    let created = user.creation_time.as_deref().map(format_time_short).unwrap_or_default();
     let href = format!("/user/{name}");
     view! {
         <article class="user-card">

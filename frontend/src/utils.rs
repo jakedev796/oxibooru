@@ -18,10 +18,7 @@ pub fn use_list_query_params(default_limit: i64) -> Memo<ListQueryParams> {
         ListQueryParams {
             query: map.get("query").unwrap_or_default(),
             offset: map.get("offset").and_then(|s| s.parse().ok()).unwrap_or(0),
-            limit: map
-                .get("limit")
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(default_limit),
+            limit: map.get("limit").and_then(|s| s.parse().ok()).unwrap_or(default_limit),
         }
     })
 }
@@ -47,11 +44,7 @@ pub fn build_list_url(base: &str, query: &str, offset: i64, limit: i64) -> Strin
 /// scrolls near the bottom of the page (within 300px). Automatically
 /// guards against duplicate calls via `loading_more` and `has_more`.
 /// Registers cleanup to remove the listener when the component is unmounted.
-pub fn setup_scroll_listener(
-    loading_more: RwSignal<bool>,
-    has_more: Signal<bool>,
-    on_threshold: impl Fn() + 'static,
-) {
+pub fn setup_scroll_listener(loading_more: RwSignal<bool>, has_more: Signal<bool>, on_threshold: impl Fn() + 'static) {
     let handler = Closure::wrap(Box::new(move || {
         if loading_more.get_untracked() || !has_more.get_untracked() {
             return;
@@ -110,11 +103,7 @@ pub fn format_file_size(bytes: i64) -> String {
 
 /// Format an ISO timestamp for display (e.g., "2024-01-15T10:30:45Z" → "2024-01-15").
 pub fn format_time_short(timestamp: &str) -> String {
-    timestamp
-        .split('T')
-        .next()
-        .unwrap_or(timestamp)
-        .to_string()
+    timestamp.split('T').next().unwrap_or(timestamp).to_string()
 }
 
 #[cfg(test)]

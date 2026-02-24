@@ -11,10 +11,7 @@ use crate::components::score_widget::ScoreWidget;
 use crate::utils::format_time_short;
 
 #[component]
-pub fn CommentList(
-    post_id: i64,
-    comments: RwSignal<Vec<CommentInfo>>,
-) -> impl IntoView {
+pub fn CommentList(post_id: i64, comments: RwSignal<Vec<CommentInfo>>) -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let auth = expect_context::<AuthState>();
     let editing_id = RwSignal::new(Option::<i64>::None);

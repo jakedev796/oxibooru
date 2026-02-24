@@ -10,20 +10,13 @@ async fn get_pool_categories_returns_unpaged() {
     let resp = reqwest::get(&url)
         .await
         .expect("backend not reachable — is it running on port 6666?");
-    assert!(
-        resp.status().is_success(),
-        "GET /pool-categories returned {}",
-        resp.status()
-    );
+    assert!(resp.status().is_success(), "GET /pool-categories returned {}", resp.status());
 
     let data: UnpagedResponse<PoolCategoryInfo> = resp
         .json()
         .await
         .expect("failed to deserialize UnpagedResponse<PoolCategoryInfo>");
-    assert!(
-        !data.results.is_empty(),
-        "should have at least one pool category (default)"
-    );
+    assert!(!data.results.is_empty(), "should have at least one pool category (default)");
 
     let has_default = data.results.iter().any(|c| c.default == Some(true));
     assert!(has_default, "should have a default pool category");
@@ -57,8 +50,5 @@ async fn create_pool_category_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated POST /pool-categories should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated POST /pool-categories should fail, got {status}");
 }

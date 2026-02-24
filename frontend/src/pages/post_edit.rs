@@ -22,13 +22,7 @@ pub fn PostEditPage() -> impl IntoView {
     let params = use_params_map();
     let navigate = use_navigate();
 
-    let post_id = move || {
-        params
-            .get()
-            .get("id")
-            .and_then(|s| s.parse::<i64>().ok())
-            .unwrap_or(0)
-    };
+    let post_id = move || params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);
 
     // Loading state
     let (loading, set_loading) = signal(true);
@@ -146,10 +140,7 @@ pub fn PostEditPage() -> impl IntoView {
             if s.trim().is_empty() {
                 Some(vec![])
             } else {
-                let parsed: Result<Vec<i64>, _> = s
-                    .split(',')
-                    .map(|p| p.trim().parse::<i64>())
-                    .collect();
+                let parsed: Result<Vec<i64>, _> = s.split(',').map(|p| p.trim().parse::<i64>()).collect();
                 match parsed {
                     Ok(ids) => Some(ids),
                     Err(_) => {
@@ -219,11 +210,7 @@ pub fn PostEditPage() -> impl IntoView {
         let ver = version.get_untracked();
         let nav = nav_delete.clone();
         leptos::task::spawn_local(async move {
-            if client
-                .delete_post(id, &DeleteBody { version: ver })
-                .await
-                .is_ok()
-            {
+            if client.delete_post(id, &DeleteBody { version: ver }).await.is_ok() {
                 nav("/posts", Default::default());
             }
         });
@@ -243,55 +230,59 @@ pub fn PostEditPage() -> impl IntoView {
         });
     };
 
-    let can_delete =
-        auth.has_privilege("posts:delete:own") || auth.has_privilege("posts:delete:any");
+    let can_delete = auth.has_privilege("posts:delete:own") || auth.has_privilege("posts:delete:any");
     let can_feature = auth.has_privilege("posts:feature");
 
     // Keyboard shortcuts: Ctrl+S to save
     let shortcuts = expect_context::<KeyboardShortcuts>();
 
     let save_form_ref: NodeRef<leptos::html::Form> = NodeRef::new();
-    shortcuts.register("ctrl+s", Callback::new(move |()| {
-        if let Some(form) = save_form_ref.get() {
-            let _ = form.request_submit();
-        }
-    }));
+    shortcuts.register(
+        "ctrl+s",
+        Callback::new(move |()| {
+            if let Some(form) = save_form_ref.get() {
+                let _ = form.request_submit();
+            }
+        }),
+    );
 
     // T to focus tag input
-    shortcuts.register("t", Callback::new(move |()| {
-        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
-            if let Some(el) = doc.get_element_by_id("tag-input") {
-                if let Ok(input) = el.dyn_into::<web_sys::HtmlElement>() {
-                    let _ = input.focus();
+    shortcuts.register(
+        "t",
+        Callback::new(move |()| {
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                if let Some(el) = doc.get_element_by_id("tag-input") {
+                    if let Ok(input) = el.dyn_into::<web_sys::HtmlElement>() {
+                        let _ = input.focus();
+                    }
                 }
             }
-        }
-    }));
+        }),
+    );
 
     // Delete — trigger post deletion (with confirmation dialog)
     if can_delete {
         let nav_kb_delete = navigate.clone();
-        shortcuts.register("Delete", Callback::new(move |()| {
-            let confirmed = web_sys::window()
-                .and_then(|w| w.confirm_with_message("Delete this post?").ok())
-                .unwrap_or(false);
-            if !confirmed {
-                return;
-            }
-            let client = api.get_untracked();
-            let id = post_id();
-            let ver = version.get_untracked();
-            let nav = nav_kb_delete.clone();
-            leptos::task::spawn_local(async move {
-                if client
-                    .delete_post(id, &DeleteBody { version: ver })
-                    .await
-                    .is_ok()
-                {
-                    nav("/posts", Default::default());
+        shortcuts.register(
+            "Delete",
+            Callback::new(move |()| {
+                let confirmed = web_sys::window()
+                    .and_then(|w| w.confirm_with_message("Delete this post?").ok())
+                    .unwrap_or(false);
+                if !confirmed {
+                    return;
                 }
-            });
-        }));
+                let client = api.get_untracked();
+                let id = post_id();
+                let ver = version.get_untracked();
+                let nav = nav_kb_delete.clone();
+                leptos::task::spawn_local(async move {
+                    if client.delete_post(id, &DeleteBody { version: ver }).await.is_ok() {
+                        nav("/posts", Default::default());
+                    }
+                });
+            }),
+        );
     }
 
     on_cleanup(move || {

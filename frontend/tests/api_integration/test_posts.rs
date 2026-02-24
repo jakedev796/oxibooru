@@ -12,7 +12,10 @@ async fn get_posts_returns_paged_response() {
         .expect("backend not reachable — is it running on port 6666?");
     assert!(resp.status().is_success(), "GET /posts returned {}", resp.status());
 
-    let page: PagedResponse<PostInfo> = resp.json().await.expect("failed to deserialize PagedResponse<PostInfo>");
+    let page: PagedResponse<PostInfo> = resp
+        .json()
+        .await
+        .expect("failed to deserialize PagedResponse<PostInfo>");
     assert!(page.total >= 0, "total should be non-negative");
     assert!(page.limit == 2, "limit should match request");
     assert!(page.offset == 0, "offset should match request");
@@ -91,10 +94,7 @@ async fn get_featured_post() {
 
     // Featured post may not exist (404) — both are valid
     let status = resp.status().as_u16();
-    assert!(
-        status == 200 || status == 404,
-        "GET /featured-post should return 200 or 404, got {status}"
-    );
+    assert!(status == 200 || status == 404, "GET /featured-post should return 200 or 404, got {status}");
 
     if status == 200 {
         let post: PostInfo = resp.json().await.expect("failed to deserialize featured PostInfo");
@@ -146,11 +146,7 @@ async fn favorite_post_unauthenticated_fails() {
     let post_id = page.results[0].id.unwrap();
     let client = reqwest::Client::new();
     let url = format!("{BACKEND_URL}/post/{post_id}/favorite");
-    let resp = client
-        .post(&url)
-        .send()
-        .await
-        .expect("backend not reachable");
+    let resp = client.post(&url).send().await.expect("backend not reachable");
     let status = resp.status().as_u16();
     assert!(
         status == 401 || status == 403,
@@ -180,10 +176,7 @@ async fn delete_post_unauthenticated_fails() {
         .await
         .expect("backend not reachable");
     let status = resp.status().as_u16();
-    assert!(
-        status == 401 || status == 403,
-        "unauthenticated DELETE /post/{post_id} should fail, got {status}"
-    );
+    assert!(status == 401 || status == 403, "unauthenticated DELETE /post/{post_id} should fail, got {status}");
 }
 
 /// PUT /post/{id} with stale version should return conflict.
@@ -234,8 +227,5 @@ async fn reverse_search_empty_body_fails() {
 
     // Should fail — no content provided
     let status = resp.status().as_u16();
-    assert!(
-        status >= 400,
-        "POST /posts/reverse-search with empty body should return error, got {status}"
-    );
+    assert!(status >= 400, "POST /posts/reverse-search with empty body should return error, got {status}");
 }

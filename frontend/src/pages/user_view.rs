@@ -13,9 +13,7 @@ pub fn UserViewPage() -> impl IntoView {
     let loading = expect_context::<LoadingState>();
     let params = use_params_map();
 
-    let user_name = Memo::new(move |_| {
-        params.get().get("name").unwrap_or_default()
-    });
+    let user_name = Memo::new(move |_| params.get().get("name").unwrap_or_default());
 
     let user = LocalResource::new(move || {
         let client = api.get();

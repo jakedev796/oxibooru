@@ -45,16 +45,11 @@ fn url_encode(s: &str) -> String {
 impl ApiClient {
     // --- Tag categories ---
 
-    pub async fn get_tag_categories(
-        &self,
-    ) -> Result<UnpagedResponse<TagCategoryInfo>, ApiError> {
+    pub async fn get_tag_categories(&self) -> Result<UnpagedResponse<TagCategoryInfo>, ApiError> {
         self.get("/tag-categories", &[]).await
     }
 
-    pub async fn create_tag_category(
-        &self,
-        body: &CreateTagCategoryBody,
-    ) -> Result<TagCategoryInfo, ApiError> {
+    pub async fn create_tag_category(&self, body: &CreateTagCategoryBody) -> Result<TagCategoryInfo, ApiError> {
         self.post("/tag-categories", body).await
     }
 
@@ -63,42 +58,25 @@ impl ApiClient {
         name: &str,
         body: &UpdateTagCategoryBody,
     ) -> Result<TagCategoryInfo, ApiError> {
-        self.put(&format!("/tag-category/{}", url_encode(name)), body)
-            .await
+        self.put(&format!("/tag-category/{}", url_encode(name)), body).await
     }
 
-    pub async fn delete_tag_category(
-        &self,
-        name: &str,
-        body: &DeleteBody,
-    ) -> Result<(), ApiError> {
-        self.delete(&format!("/tag-category/{}", url_encode(name)), body)
-            .await
+    pub async fn delete_tag_category(&self, name: &str, body: &DeleteBody) -> Result<(), ApiError> {
+        self.delete(&format!("/tag-category/{}", url_encode(name)), body).await
     }
 
-    pub async fn set_default_tag_category(
-        &self,
-        name: &str,
-    ) -> Result<TagCategoryInfo, ApiError> {
-        self.put(
-            &format!("/tag-category/{}/default", url_encode(name)),
-            &serde_json::json!({}),
-        )
-        .await
+    pub async fn set_default_tag_category(&self, name: &str) -> Result<TagCategoryInfo, ApiError> {
+        self.put(&format!("/tag-category/{}/default", url_encode(name)), &serde_json::json!({}))
+            .await
     }
 
     // --- Pool categories ---
 
-    pub async fn get_pool_categories(
-        &self,
-    ) -> Result<UnpagedResponse<PoolCategoryInfo>, ApiError> {
+    pub async fn get_pool_categories(&self) -> Result<UnpagedResponse<PoolCategoryInfo>, ApiError> {
         self.get("/pool-categories", &[]).await
     }
 
-    pub async fn create_pool_category(
-        &self,
-        body: &CreatePoolCategoryBody,
-    ) -> Result<PoolCategoryInfo, ApiError> {
+    pub async fn create_pool_category(&self, body: &CreatePoolCategoryBody) -> Result<PoolCategoryInfo, ApiError> {
         self.post("/pool-categories", body).await
     }
 
@@ -107,28 +85,16 @@ impl ApiClient {
         name: &str,
         body: &UpdatePoolCategoryBody,
     ) -> Result<PoolCategoryInfo, ApiError> {
-        self.put(&format!("/pool-category/{}", url_encode(name)), body)
-            .await
+        self.put(&format!("/pool-category/{}", url_encode(name)), body).await
     }
 
-    pub async fn delete_pool_category(
-        &self,
-        name: &str,
-        body: &DeleteBody,
-    ) -> Result<(), ApiError> {
-        self.delete(&format!("/pool-category/{}", url_encode(name)), body)
-            .await
+    pub async fn delete_pool_category(&self, name: &str, body: &DeleteBody) -> Result<(), ApiError> {
+        self.delete(&format!("/pool-category/{}", url_encode(name)), body).await
     }
 
-    pub async fn set_default_pool_category(
-        &self,
-        name: &str,
-    ) -> Result<PoolCategoryInfo, ApiError> {
-        self.put(
-            &format!("/pool-category/{}/default", url_encode(name)),
-            &serde_json::json!({}),
-        )
-        .await
+    pub async fn set_default_pool_category(&self, name: &str) -> Result<PoolCategoryInfo, ApiError> {
+        self.put(&format!("/pool-category/{}/default", url_encode(name)), &serde_json::json!({}))
+            .await
     }
 }
 

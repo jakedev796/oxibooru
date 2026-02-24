@@ -14,12 +14,7 @@ pub fn UserDeletePage() -> impl IntoView {
     let params = use_params_map();
     let navigate = use_navigate();
 
-    let username = move || {
-        params
-            .get()
-            .get("name")
-            .unwrap_or_default()
-    };
+    let username = move || params.get().get("name").unwrap_or_default();
 
     // Load user to get version for optimistic locking
     let (version, set_version) = signal(String::new());
@@ -57,12 +52,7 @@ pub fn UserDeletePage() -> impl IntoView {
         };
         let client = api.get_untracked();
         let navigate = navigate.clone();
-        let is_self = auth
-            .current_user
-            .get_untracked()
-            .and_then(|u| u.name)
-            .as_deref()
-            == Some(&name);
+        let is_self = auth.current_user.get_untracked().and_then(|u| u.name).as_deref() == Some(&name);
 
         leptos::task::spawn_local(async move {
             match client.delete_user(&name, &body).await {
