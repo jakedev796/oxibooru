@@ -6,7 +6,8 @@ use leptos_router::hooks::use_navigate;
 use oxibooru_shared::enums::PostSafety;
 use oxibooru_shared::post::PostInfo;
 use oxibooru_shared::request::DeleteBody;
-use wasm_bindgen::prelude::*;
+
+use wasm_bindgen::JsCast;
 
 use crate::api::posts::UpdatePostBody;
 use crate::api::{ApiClient, ApiError};
@@ -14,8 +15,9 @@ use crate::auth::AuthState;
 use crate::components::pagination::Pagination;
 use crate::components::post_thumbnail::PostThumbnail;
 use crate::components::search_bar::SearchBar;
+use crate::keyboard::KeyboardShortcuts;
 use crate::settings::SettingsState;
-use crate::utils::{build_list_url, use_list_query_params};
+use crate::utils::{build_list_url, setup_scroll_listener, use_list_query_params};
 
 const FIELDS: &str = "id,thumbnailUrl,type,safety,score,favoriteCount,commentCount,tags,version";
 
@@ -263,38 +265,23 @@ pub fn PostListPage() -> impl IntoView {
 
     // Set up scroll listener for endless scroll mode
     if endless {
-        let handler = Closure::wrap(Box::new(move || {
-            if loading_more.get_untracked() || !has_more.get_untracked() {
-                return;
-            }
-            if let Some(win) = web_sys::window() {
-                if let Some(doc) = win.document() {
-                    if let Some(el) = doc.document_element() {
-                        let scroll_top = el.scroll_top();
-                        let scroll_height = el.scroll_height();
-                        let client_height = el.client_height();
-                        if scroll_height - scroll_top - client_height < 300 {
-                            load_more();
-                        }
-                    }
+        setup_scroll_listener(loading_more, has_more, move || load_more());
+    }
+
+    // P — focus first post thumbnail
+    let shortcuts = expect_context::<KeyboardShortcuts>();
+    shortcuts.register("p", Callback::new(move |()| {
+        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+            if let Some(el) = doc.query_selector(".post-thumbnail a").ok().flatten() {
+                if let Ok(link) = el.dyn_into::<web_sys::HtmlElement>() {
+                    let _ = link.focus();
                 }
             }
-        }) as Box<dyn FnMut()>);
-
-        let js_fn: js_sys::Function = handler.as_ref().unchecked_ref::<js_sys::Function>().clone();
-        handler.forget();
-        let js_fn_cleanup = js_fn.clone();
-
-        if let Some(win) = web_sys::window() {
-            let _ = win.add_event_listener_with_callback("scroll", &js_fn);
         }
-
-        on_cleanup(move || {
-            if let Some(win) = web_sys::window() {
-                let _ = win.remove_event_listener_with_callback("scroll", &js_fn_cleanup);
-            }
-        });
-    }
+    }));
+    on_cleanup(move || {
+        shortcuts.unregister("p");
+    });
 
     // Check bulk privileges
     let can_bulk_tag = auth.has_privilege("post_bulk_edit_tag");

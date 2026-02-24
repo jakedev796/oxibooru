@@ -118,6 +118,7 @@ pub fn TagAutocomplete(
         <div class="tag-autocomplete">
             <input
                 type="text"
+                id="tag-input"
                 prop:value=move || query.get()
                 on:input=on_input
                 on:keydown=on_keydown

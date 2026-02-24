@@ -66,6 +66,19 @@ pub fn SettingsPage() -> impl IntoView {
                         <label>
                             <input
                                 type="checkbox"
+                                prop:checked=move || settings.with(|s| s.keyboard_shortcuts)
+                                on:change=move |_| {
+                                    settings_state.update(|s| s.keyboard_shortcuts = !s.keyboard_shortcuts);
+                                    set_saved.set(false);
+                                }
+                            />
+                            "Enable keyboard shortcuts"
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input
+                                type="checkbox"
                                 prop:checked=move || settings.with(|s| s.tag_suggestions_enabled)
                                 on:change=move |_| {
                                     settings_state.update(|s| s.tag_suggestions_enabled = !s.tag_suggestions_enabled);

@@ -10,7 +10,7 @@ pub fn Markdown(#[prop(into)] text: String) -> impl IntoView {
 }
 
 /// Convert markdown to HTML using pulldown-cmark.
-fn render_markdown(input: &str) -> String {
+pub fn render_markdown(input: &str) -> String {
     use pulldown_cmark::{html, Options, Parser};
 
     let mut options = Options::empty();

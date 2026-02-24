@@ -1,3 +1,117 @@
+/* ========================================
+   CSS Custom Properties (Light Theme)
+   ======================================== */
+:root {
+    --text: #333;
+    --text-muted: #666;
+    --text-dim: #888;
+    --text-dimmer: #999;
+    --text-dimmest: #aaa;
+    --bg: #fff;
+    --bg-alt: #f9f9f9;
+    --bg-highlight: #f0f0f0;
+    --bg-input-disabled: #f5f5f5;
+    --bg-code: #f4f4f4;
+    --link: #2a7ae2;
+    --primary: #4a9eff;
+    --primary-hover: #3a8eef;
+    --primary-focus-shadow: rgba(74, 158, 255, 0.2);
+    --border: #ccc;
+    --border-light: #ddd;
+    --border-lighter: #eee;
+    --nav-bg: #2a2a2a;
+    --nav-text: #ccc;
+    --nav-text-hover: #fff;
+    --nav-hover-bg: #444;
+    --nav-active-border: #4a9eff;
+    --error-text: #c44;
+    --error-bg: #fee;
+    --error-border: #fcc;
+    --success-text: #4a4;
+    --success-bg: #efe;
+    --success-border: #cec;
+    --tag-bg: #e8f0fe;
+    --tag-bg-hover: #d0e2fc;
+    --pool-chip-bg: #f0e8fe;
+    --autocomplete-bg: #fff;
+    --autocomplete-shadow: rgba(0, 0, 0, 0.1);
+    --danger: #c44;
+    --danger-hover: #b33;
+    --drop-zone-hover-bg: #f8fbff;
+    --drop-zone-active-bg: #e8f0fe;
+    --score-up-bg: #e6f4ea;
+    --score-up-border: #3c3;
+    --score-up-text: #2a7a2a;
+    --score-down-bg: #fce8e8;
+    --score-down-border: #c33;
+    --score-down-text: #a33;
+    --fav-inactive: #ccc;
+    --fav-active: #e44;
+    --btn-bg: #fff;
+    --btn-hover-bg: #f0f0f0;
+    --btn-select-bg: #eee;
+    --bulk-dialog-bg: #f9f9f9;
+    --thumbnail-bg: #f5f5f5;
+    --not-found-heading: #ccc;
+}
+
+/* ========================================
+   Dark Theme Overrides
+   ======================================== */
+body.darktheme {
+    --text: #ccc;
+    --text-muted: #aaa;
+    --text-dim: #888;
+    --text-dimmer: #777;
+    --text-dimmest: #666;
+    --bg: #1a1a1a;
+    --bg-alt: #222;
+    --bg-highlight: #333;
+    --bg-input-disabled: #2a2a2a;
+    --bg-code: #2a2a2a;
+    --link: #6ab0ff;
+    --primary: #4a9eff;
+    --primary-hover: #5ab0ff;
+    --primary-focus-shadow: rgba(74, 158, 255, 0.3);
+    --border: #444;
+    --border-light: #3a3a3a;
+    --border-lighter: #333;
+    --nav-bg: #111;
+    --nav-text: #999;
+    --nav-text-hover: #eee;
+    --nav-hover-bg: #333;
+    --nav-active-border: #4a9eff;
+    --error-text: #f88;
+    --error-bg: #3a1a1a;
+    --error-border: #633;
+    --success-text: #8d8;
+    --success-bg: #1a3a1a;
+    --success-border: #363;
+    --tag-bg: #1e3050;
+    --tag-bg-hover: #2a4060;
+    --pool-chip-bg: #302040;
+    --autocomplete-bg: #222;
+    --autocomplete-shadow: rgba(0, 0, 0, 0.4);
+    --danger: #e55;
+    --danger-hover: #c44;
+    --drop-zone-hover-bg: #1a2530;
+    --drop-zone-active-bg: #1e3050;
+    --score-up-bg: #1a3a1a;
+    --score-up-border: #3c3;
+    --score-up-text: #8d8;
+    --score-down-bg: #3a1a1a;
+    --score-down-border: #c33;
+    --score-down-text: #f88;
+    --fav-inactive: #555;
+    --fav-active: #e44;
+    --btn-bg: #2a2a2a;
+    --btn-hover-bg: #333;
+    --btn-select-bg: #333;
+    --bulk-dialog-bg: #252525;
+    --thumbnail-bg: #252525;
+    --not-found-heading: #444;
+}
+
 /* Reset */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -9,8 +123,8 @@ html {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.5;
-    color: #333;
-    background: #fff;
+    color: var(--text);
+    background: var(--bg);
 }
 
 body {
@@ -20,7 +134,7 @@ body {
 }
 
 a {
-    color: #2a7ae2;
+    color: var(--link);
     text-decoration: none;
 }
 
@@ -30,7 +144,7 @@ a:hover {
 
 /* Navigation */
 .top-navigation {
-    background: #2a2a2a;
+    background: var(--nav-bg);
     padding: 0 1rem;
 }
 
@@ -52,19 +166,19 @@ a:hover {
 .top-navigation a {
     display: block;
     padding: 0.6rem 0.8rem;
-    color: #ccc;
+    color: var(--nav-text);
     text-decoration: none;
     font-size: 0.9rem;
 }
 
 .top-navigation a:hover {
-    color: #fff;
-    background: #444;
+    color: var(--nav-text-hover);
+    background: var(--nav-hover-bg);
 }
 
 .top-navigation a[aria-current="page"] {
-    color: #fff;
-    border-bottom: 2px solid #4a9eff;
+    color: var(--nav-text-hover);
+    border-bottom: 2px solid var(--nav-active-border);
 }
 
 /* Main content */
@@ -105,15 +219,15 @@ main {
 
 .not-found-page h1 {
     font-size: 4rem;
-    color: #ccc;
+    color: var(--not-found-heading);
     margin-bottom: 0.5rem;
 }
 
 /* Error message */
 .error {
-    color: #c44;
+    color: var(--error-text);
     padding: 1rem;
-    background: #fee;
+    background: var(--error-bg);
     border-radius: 4px;
 }
 
@@ -129,20 +243,22 @@ main {
 .search-bar input[type="text"] {
     flex: 1;
     padding: 0.4rem 0.6rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .search-bar input[type="text"]:focus {
-    border-color: #4a9eff;
+    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 0 2px var(--primary-focus-shadow);
 }
 
 .search-bar button {
     padding: 0.4rem 1rem;
-    background: #4a9eff;
+    background: var(--primary);
     color: #fff;
     border: none;
     border-radius: 3px;
@@ -151,7 +267,7 @@ main {
 }
 
 .search-bar button:hover {
-    background: #3a8eef;
+    background: var(--primary-hover);
 }
 
 /* ========================================
@@ -168,32 +284,32 @@ main {
 .pagination a {
     display: inline-block;
     padding: 0.3rem 0.6rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
     border-radius: 3px;
-    color: #333;
+    color: var(--text);
     text-decoration: none;
     font-size: 0.85rem;
 }
 
 .pagination a:hover {
-    background: #f0f0f0;
+    background: var(--bg-highlight);
     text-decoration: none;
 }
 
 .pagination a.active {
-    background: #4a9eff;
+    background: var(--primary);
     color: #fff;
-    border-color: #4a9eff;
+    border-color: var(--primary);
 }
 
 .pagination .ellipsis {
     padding: 0.3rem 0.4rem;
-    color: #999;
+    color: var(--text-dimmer);
 }
 
 .pagination .total {
     margin-left: auto;
-    color: #888;
+    color: var(--text-dim);
     font-size: 0.85rem;
 }
 
@@ -211,7 +327,7 @@ main {
     position: relative;
     border-radius: 4px;
     overflow: hidden;
-    background: #f5f5f5;
+    background: var(--thumbnail-bg);
 }
 
 .post-thumbnail a {
@@ -258,7 +374,7 @@ main {
     gap: 0.5rem;
     padding: 0.25rem 0.4rem;
     font-size: 0.75rem;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .post-stats .stat {
@@ -305,9 +421,83 @@ main {
     max-height: none;
 }
 
+.post-content.upscale img,
+.post-content.upscale video {
+    min-width: 100%;
+}
+
+.post-content-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.fit-mode-btn {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+}
+
+/* Reverse search links */
+.reverse-search ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.reverse-search li a {
+    font-size: 0.85rem;
+}
+
+/* Post notes overlay */
+.post-notes-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.post-notes-overlay svg {
+    width: 100%;
+    height: 100%;
+}
+
+.note-polygon {
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 0.002;
+    pointer-events: all;
+    cursor: pointer;
+}
+
+.note-polygon:hover,
+.note-polygon.hovered {
+    fill: rgba(255, 255, 100, 0.3);
+    stroke: rgba(255, 200, 0, 0.8);
+}
+
+.note-tooltip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.note-tooltip p {
+    margin: 0;
+}
+
 .flash-notice {
     padding: 2rem;
-    color: #888;
+    color: var(--text-dim);
     text-align: center;
 }
 
@@ -327,28 +517,28 @@ main {
 .history-list th {
     text-align: left;
     padding: 0.5rem;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--border-light);
     font-weight: 600;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .tag-list td,
 .pool-list td,
 .history-list td {
     padding: 0.4rem 0.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-lighter);
     font-size: 0.9rem;
 }
 
 .tag-list tr:hover,
 .pool-list tr:hover,
 .history-list tr:hover {
-    background: #f9f9f9;
+    background: var(--bg-alt);
 }
 
 .tag-relations {
-    color: #888;
+    color: var(--text-dim);
     font-size: 0.85rem;
 }
 
@@ -369,7 +559,7 @@ main {
 }
 
 .user-card {
-    border: 1px solid #eee;
+    border: 1px solid var(--border-lighter);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -384,7 +574,7 @@ main {
 }
 
 .user-card a:hover {
-    background: #f9f9f9;
+    background: var(--bg-alt);
     text-decoration: none;
 }
 
@@ -407,12 +597,12 @@ main {
 
 .user-rank {
     font-size: 0.75rem;
-    color: #888;
+    color: var(--text-dim);
 }
 
 .user-date {
     font-size: 0.7rem;
-    color: #aaa;
+    color: var(--text-dimmest);
 }
 
 /* User rank colors */
@@ -435,7 +625,7 @@ main {
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-lighter);
 }
 
 .post-comments-thumb {
@@ -470,11 +660,11 @@ main {
 }
 
 .comment-header time {
-    color: #888;
+    color: var(--text-dim);
 }
 
 .comment-score {
-    color: #888;
+    color: var(--text-dim);
     font-size: 0.8rem;
 }
 
@@ -492,6 +682,11 @@ main {
     min-width: 0;
 }
 
+.post-content-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
 .post-sidebar section {
     margin-bottom: 1.5rem;
 }
@@ -500,7 +695,7 @@ main {
     font-size: 1rem;
     margin-bottom: 0.5rem;
     padding-bottom: 0.25rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-lighter);
 }
 
 .post-info dl {
@@ -512,7 +707,7 @@ main {
 
 .post-info dt {
     font-weight: 600;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .post-source {
@@ -545,18 +740,18 @@ main {
 .tag-list-inline a {
     padding: 1px 6px;
     border-radius: 3px;
-    background: #e8f0fe;
+    background: var(--tag-bg);
 }
 
 .tag-list-inline a:hover {
-    background: #d0e2fc;
+    background: var(--tag-bg-hover);
     text-decoration: none;
 }
 
 .tag-usages,
 .sibling-count {
     font-size: 0.75rem;
-    color: #999;
+    color: var(--text-dimmer);
 }
 
 /* Relations */
@@ -585,7 +780,7 @@ main {
 }
 
 .no-comments {
-    color: #888;
+    color: var(--text-dim);
     font-style: italic;
 }
 
@@ -595,19 +790,19 @@ main {
     justify-content: space-between;
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-lighter);
 }
 
 .post-neighbors .prev,
 .post-neighbors .next {
     padding: 0.4rem 0.8rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
     border-radius: 3px;
 }
 
 .post-neighbors .prev:hover,
 .post-neighbors .next:hover {
-    background: #f0f0f0;
+    background: var(--bg-highlight);
     text-decoration: none;
 }
 
@@ -617,7 +812,7 @@ main {
 .tag-view header {
     padding: 0.5rem 0;
     margin-bottom: 1rem;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid var(--border-lighter);
 }
 
 .tag-view header h1 {
@@ -633,7 +828,7 @@ main {
 
 .tag-summary dt {
     font-weight: 600;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .tag-aliases,
@@ -658,7 +853,7 @@ main {
 .pool-view header {
     padding: 0.5rem 0;
     margin-bottom: 1rem;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid var(--border-lighter);
 }
 
 .pool-view header h1 {
@@ -674,7 +869,7 @@ main {
 
 .pool-summary dt {
     font-weight: 600;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .pool-aliases,
@@ -734,7 +929,7 @@ main {
 
 .user-stats dt {
     font-weight: 600;
-    color: #666;
+    color: var(--text-muted);
 }
 
 /* ========================================
@@ -748,27 +943,27 @@ main {
     list-style: none;
     display: flex;
     gap: 0;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid var(--border-lighter);
     margin-bottom: 1.5rem;
 }
 
 .help-nav li a {
     display: block;
     padding: 0.5rem 1rem;
-    color: #666;
+    color: var(--text-muted);
     text-decoration: none;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
 }
 
 .help-nav li a:hover {
-    color: #333;
+    color: var(--text);
     text-decoration: none;
 }
 
 .help-nav li.active a {
-    color: #2a7ae2;
-    border-bottom-color: #2a7ae2;
+    color: var(--link);
+    border-bottom-color: var(--link);
 }
 
 .help-subnav ul {
@@ -780,14 +975,14 @@ main {
 
 .help-subnav a {
     padding: 0.3rem 0.7rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
     border-radius: 3px;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .help-subnav a:hover {
-    background: #f0f0f0;
+    background: var(--bg-highlight);
     text-decoration: none;
 }
 
@@ -838,27 +1033,27 @@ main {
 .help-content th {
     text-align: left;
     padding: 0.4rem 0.6rem;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--border-light);
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .help-content td {
     padding: 0.35rem 0.6rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-lighter);
     font-size: 0.9rem;
 }
 
 .help-content code {
-    background: #f4f4f4;
+    background: var(--bg-code);
     padding: 1px 4px;
     border-radius: 3px;
     font-size: 0.85rem;
 }
 
 .help-content kbd {
-    background: #f4f4f4;
-    border: 1px solid #ccc;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
     border-radius: 3px;
     padding: 1px 6px;
     font-size: 0.85rem;
@@ -883,14 +1078,14 @@ main {
 }
 
 .markdown-content code {
-    background: #f4f4f4;
+    background: var(--bg-code);
     padding: 1px 4px;
     border-radius: 3px;
     font-size: 0.85em;
 }
 
 .markdown-content pre {
-    background: #f4f4f4;
+    background: var(--bg-code);
     padding: 0.75rem;
     border-radius: 4px;
     overflow-x: auto;
@@ -909,7 +1104,7 @@ main {
 
 .markdown-content th,
 .markdown-content td {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
     padding: 0.3rem 0.6rem;
 }
 
@@ -951,22 +1146,24 @@ ul.input input[type="number"],
 ul.input select {
     width: 100%;
     padding: 0.4rem 0.6rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
 }
 
 ul.input input:focus,
 ul.input select:focus {
-    border-color: #4a9eff;
+    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 0 2px var(--primary-focus-shadow);
 }
 
 ul.input input:disabled,
 ul.input select:disabled {
-    background: #f5f5f5;
-    color: #999;
+    background: var(--bg-input-disabled);
+    color: var(--text-dimmer);
 }
 
 ul.input input[type="checkbox"] {
@@ -987,7 +1184,7 @@ ul.input input[type="number"] {
 .hint {
     display: block;
     font-size: 0.75rem;
-    color: #888;
+    color: var(--text-dim);
     margin-top: 0.2rem;
 }
 
@@ -1002,15 +1199,15 @@ ul.input input[type="number"] {
 }
 
 .message.error {
-    background: #fee;
-    color: #c44;
-    border: 1px solid #fcc;
+    background: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-border);
 }
 
 .message.success {
-    background: #efe;
-    color: #4a4;
-    border: 1px solid #cec;
+    background: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
 }
 
 .buttons {
@@ -1021,7 +1218,7 @@ ul.input input[type="number"] {
 
 input[type="submit"] {
     padding: 0.5rem 1.5rem;
-    background: #4a9eff;
+    background: var(--primary);
     color: #fff;
     border: none;
     border-radius: 3px;
@@ -1030,7 +1227,7 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
-    background: #3a8eef;
+    background: var(--primary-hover);
 }
 
 input[type="submit"]:disabled {
@@ -1040,12 +1237,12 @@ input[type="submit"]:disabled {
 
 input[type="submit"].dangerous,
 button.dangerous {
-    background: #c44;
+    background: var(--danger);
 }
 
 input[type="submit"].dangerous:hover,
 button.dangerous:hover {
-    background: #b33;
+    background: var(--danger-hover);
 }
 
 /* Safety settings inline checkboxes */
@@ -1078,21 +1275,21 @@ button.dangerous:hover {
 .token-list th {
     text-align: left;
     padding: 0.5rem;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--border-light);
     font-weight: 600;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .token-list td {
     padding: 0.4rem 0.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-lighter);
     font-size: 0.9rem;
 }
 
 .token-list .token-value code {
     font-size: 0.8rem;
-    background: #f4f4f4;
+    background: var(--bg-code);
     padding: 1px 4px;
     border-radius: 3px;
     word-break: break-all;
@@ -1100,15 +1297,16 @@ button.dangerous:hover {
 
 .token-list button {
     padding: 0.25rem 0.6rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
-    background: #fff;
+    background: var(--btn-bg);
     cursor: pointer;
     font-size: 0.8rem;
+    color: var(--text);
 }
 
 .token-list button:hover {
-    background: #f0f0f0;
+    background: var(--btn-hover-bg);
 }
 
 /* ========================================
@@ -1122,29 +1320,29 @@ button.dangerous:hover {
 
 .score-widget button {
     background: none;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
     border-radius: 3px;
     cursor: pointer;
     padding: 0.15rem 0.4rem;
     font-size: 0.8rem;
-    color: #666;
+    color: var(--text-muted);
     line-height: 1;
 }
 
 .score-widget button:hover {
-    background: #f0f0f0;
+    background: var(--bg-highlight);
 }
 
 .score-widget button.active-up {
-    background: #e6f4ea;
-    border-color: #3c3;
-    color: #2a7a2a;
+    background: var(--score-up-bg);
+    border-color: var(--score-up-border);
+    color: var(--score-up-text);
 }
 
 .score-widget button.active-down {
-    background: #fce8e8;
-    border-color: #c33;
-    color: #a33;
+    background: var(--score-down-bg);
+    border-color: var(--score-down-border);
+    color: var(--score-down-text);
 }
 
 .score-widget .score-value {
@@ -1169,21 +1367,21 @@ button.dangerous:hover {
     cursor: pointer;
     font-size: 1.2rem;
     padding: 0;
-    color: #ccc;
+    color: var(--fav-inactive);
     line-height: 1;
 }
 
 .favorite-widget button:hover {
-    color: #e44;
+    color: var(--fav-active);
 }
 
 .favorite-widget button.active {
-    color: #e44;
+    color: var(--fav-active);
 }
 
 .favorite-widget .fav-count {
     font-size: 0.85rem;
-    color: #888;
+    color: var(--text-dim);
 }
 
 /* ========================================
@@ -1197,17 +1395,19 @@ button.dangerous:hover {
     width: 100%;
     min-height: 4rem;
     padding: 0.5rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-family: inherit;
     font-size: 0.9rem;
     resize: vertical;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .comment-form textarea:focus {
-    border-color: #4a9eff;
+    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 0 2px var(--primary-focus-shadow);
 }
 
 .comment-form .comment-form-actions {
@@ -1225,21 +1425,21 @@ button.dangerous:hover {
 }
 
 .comment-form button[type="submit"] {
-    background: #4a9eff;
+    background: var(--primary);
     color: #fff;
 }
 
 .comment-form button[type="submit"]:hover {
-    background: #3a8eef;
+    background: var(--primary-hover);
 }
 
 .comment-form button[type="button"] {
-    background: #eee;
-    color: #333;
+    background: var(--btn-select-bg);
+    color: var(--text);
 }
 
 .comment-form button[type="button"]:hover {
-    background: #ddd;
+    background: var(--border-light);
 }
 
 /* ========================================
@@ -1256,16 +1456,16 @@ button.dangerous:hover {
     border: none;
     cursor: pointer;
     font-size: 0.75rem;
-    color: #888;
+    color: var(--text-dim);
     padding: 0;
 }
 
 .comment-actions button:hover {
-    color: #333;
+    color: var(--text);
 }
 
 .comment-actions button.btn-danger:hover {
-    color: #c33;
+    color: var(--danger);
 }
 
 /* ========================================
@@ -1280,15 +1480,17 @@ button.dangerous:hover {
 .tag-autocomplete input {
     width: 100%;
     padding: 0.4rem 0.6rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .tag-autocomplete input:focus {
-    border-color: #4a9eff;
+    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 0 2px var(--primary-focus-shadow);
 }
 
 .autocomplete-dropdown {
@@ -1297,13 +1499,13 @@ button.dangerous:hover {
     left: 0;
     right: 0;
     z-index: 100;
-    background: #fff;
-    border: 1px solid #ccc;
+    background: var(--autocomplete-bg);
+    border: 1px solid var(--border);
     border-top: none;
     border-radius: 0 0 3px 3px;
     max-height: 200px;
     overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px var(--autocomplete-shadow);
 }
 
 .autocomplete-item {
@@ -1317,7 +1519,7 @@ button.dangerous:hover {
 
 .autocomplete-item:hover,
 .autocomplete-item.highlighted {
-    background: #e8f0fe;
+    background: var(--tag-bg);
 }
 
 .autocomplete-item .tag-name {
@@ -1325,7 +1527,7 @@ button.dangerous:hover {
 }
 
 .autocomplete-item .tag-usages {
-    color: #999;
+    color: var(--text-dimmer);
     font-size: 0.75rem;
 }
 
@@ -1351,7 +1553,7 @@ button.dangerous:hover {
     align-items: center;
     gap: 0.2rem;
     padding: 0.15rem 0.5rem;
-    background: #e8f0fe;
+    background: var(--tag-bg);
     border-radius: 3px;
     font-size: 0.85rem;
 }
@@ -1361,13 +1563,13 @@ button.dangerous:hover {
     border: none;
     cursor: pointer;
     font-size: 0.75rem;
-    color: #888;
+    color: var(--text-dim);
     padding: 0 0.1rem;
     line-height: 1;
 }
 
 .tag-chip button:hover {
-    color: #c33;
+    color: var(--danger);
 }
 
 /* ========================================
@@ -1392,7 +1594,7 @@ button.dangerous:hover {
     align-items: center;
     gap: 0.2rem;
     padding: 0.15rem 0.5rem;
-    background: #f0e8fe;
+    background: var(--pool-chip-bg);
     border-radius: 3px;
     font-size: 0.85rem;
 }
@@ -1402,13 +1604,13 @@ button.dangerous:hover {
     border: none;
     cursor: pointer;
     font-size: 0.75rem;
-    color: #888;
+    color: var(--text-dim);
     padding: 0 0.1rem;
     line-height: 1;
 }
 
 .pool-chip button:hover {
-    color: #c33;
+    color: var(--danger);
 }
 
 /* ========================================
@@ -1426,23 +1628,23 @@ button.dangerous:hover {
 }
 
 .drop-zone {
-    border: 2px dashed #ccc;
+    border: 2px dashed var(--border);
     border-radius: 4px;
     padding: 1.5rem;
     text-align: center;
     cursor: pointer;
-    color: #888;
+    color: var(--text-dim);
     transition: border-color 0.2s, background 0.2s;
 }
 
 .drop-zone:hover {
-    border-color: #4a9eff;
-    background: #f8fbff;
+    border-color: var(--primary);
+    background: var(--drop-zone-hover-bg);
 }
 
 .drop-zone.drag-over {
-    border-color: #4a9eff;
-    background: #e8f0fe;
+    border-color: var(--primary);
+    background: var(--drop-zone-active-bg);
 }
 
 .drop-zone .drop-instructions {
@@ -1452,13 +1654,13 @@ button.dangerous:hover {
 
 .drop-zone .drop-hint {
     font-size: 0.75rem;
-    color: #aaa;
+    color: var(--text-dimmest);
 }
 
 .file-preview {
     margin-top: 0.5rem;
     padding: 0.4rem 0.6rem;
-    background: #f4f4f4;
+    background: var(--bg-code);
     border-radius: 3px;
     font-size: 0.85rem;
     display: flex;
@@ -1470,7 +1672,7 @@ button.dangerous:hover {
     background: none;
     border: none;
     cursor: pointer;
-    color: #c33;
+    color: var(--danger);
     font-size: 0.8rem;
 }
 
@@ -1482,7 +1684,7 @@ button.dangerous:hover {
     background: none;
     border: none;
     cursor: pointer;
-    color: #2a7ae2;
+    color: var(--link);
     font-size: 0.8rem;
     padding: 0;
 }
@@ -1500,14 +1702,16 @@ button.dangerous:hover {
 .url-input-area input {
     flex: 1;
     padding: 0.3rem 0.5rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.85rem;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .url-input-area button {
     padding: 0.3rem 0.6rem;
-    background: #4a9eff;
+    background: var(--primary);
     color: #fff;
     border: none;
     border-radius: 3px;
@@ -1527,27 +1731,27 @@ button.dangerous:hover {
 .category-table th {
     text-align: left;
     padding: 0.5rem;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--border-light);
     font-weight: 600;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .category-table td {
     padding: 0.4rem 0.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-lighter);
     font-size: 0.9rem;
     vertical-align: middle;
 }
 
 .category-table tr:hover {
-    background: #f9f9f9;
+    background: var(--bg-alt);
 }
 
 .category-table input[type="color"] {
     width: 2rem;
     height: 1.5rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     padding: 0;
     cursor: pointer;
@@ -1556,9 +1760,11 @@ button.dangerous:hover {
 .category-table input[type="number"] {
     width: 4em;
     padding: 0.2rem 0.4rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.85rem;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .color-swatch {
@@ -1594,25 +1800,27 @@ button.dangerous:hover {
 .form-row textarea {
     width: 100%;
     padding: 0.4rem 0.6rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.9rem;
     font-family: inherit;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .form-row input:focus,
 .form-row select:focus,
 .form-row textarea:focus {
-    border-color: #4a9eff;
+    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+    box-shadow: 0 0 0 2px var(--primary-focus-shadow);
 }
 
 .form-row input:disabled,
 .form-row select:disabled,
 .form-row textarea:disabled {
-    background: #f5f5f5;
-    color: #999;
+    background: var(--bg-input-disabled);
+    color: var(--text-dimmer);
 }
 
 .form-row textarea {
@@ -1624,6 +1832,25 @@ button.dangerous:hover {
     align-items: center;
     gap: 1rem;
     margin-top: 1rem;
+}
+
+.notes-list-readonly {
+    list-style: none;
+    padding: 0;
+    font-size: 0.85rem;
+}
+
+.notes-list-readonly li {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--border-lighter);
+}
+
+.notes-list-readonly li:last-child {
+    border-bottom: none;
+}
+
+.notes-list-readonly p {
+    margin: 0;
 }
 
 .form-row .checkbox-label {
@@ -1640,25 +1867,26 @@ button.dangerous:hover {
 /* Standard buttons for Phase 3 pages */
 button {
     padding: 0.4rem 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
-    background: #fff;
+    background: var(--btn-bg);
     cursor: pointer;
     font-size: 0.9rem;
+    color: var(--text);
 }
 
 button:hover {
-    background: #f0f0f0;
+    background: var(--btn-hover-bg);
 }
 
 button[type="submit"] {
-    background: #4a9eff;
+    background: var(--primary);
     color: #fff;
-    border-color: #4a9eff;
+    border-color: var(--primary);
 }
 
 button[type="submit"]:hover {
-    background: #3a8eef;
+    background: var(--primary-hover);
 }
 
 button[type="submit"]:disabled {
@@ -1668,20 +1896,20 @@ button[type="submit"]:disabled {
 }
 
 button.btn-danger {
-    background: #c44;
+    background: var(--danger);
     color: #fff;
-    border-color: #c44;
+    border-color: var(--danger);
 }
 
 button.btn-danger:hover {
-    background: #b33;
+    background: var(--danger-hover);
 }
 
 /* Success message */
 .success {
-    color: #4a4;
+    color: var(--success-text);
     padding: 1rem;
-    background: #efe;
+    background: var(--success-bg);
     border-radius: 4px;
 }
 
@@ -1697,20 +1925,20 @@ button.btn-danger:hover {
 }
 
 .bulk-toolbar .btn-select {
-    background: #eee;
-    color: #333;
+    background: var(--btn-select-bg);
+    color: var(--text);
 }
 
 .bulk-count {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-muted);
     margin: 0 0.25rem;
 }
 
 .bulk-dialog {
     padding: 0.75rem;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+    background: var(--bulk-dialog-bg);
+    border: 1px solid var(--border-light);
     border-radius: 4px;
     margin-bottom: 0.75rem;
     max-width: 400px;
@@ -1725,10 +1953,12 @@ button.btn-danger:hover {
 .bulk-dialog select {
     width: 100%;
     padding: 0.35rem 0.5rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 3px;
     font-size: 0.85rem;
     margin-bottom: 0.4rem;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .bulk-dialog-actions {
@@ -1741,7 +1971,7 @@ button.btn-danger:hover {
 }
 
 .post-thumbnail-wrapper.selected {
-    outline: 3px solid #4a9eff;
+    outline: 3px solid var(--primary);
     border-radius: 4px;
 }
 
@@ -1767,13 +1997,51 @@ button.btn-danger:hover {
 }
 
 .scroll-sentinel .loading-more {
-    color: #666;
+    color: var(--text-muted);
     font-style: italic;
 }
 
 .scroll-sentinel .end-of-results {
-    color: #999;
+    color: var(--text-dimmer);
     font-size: 0.9em;
+}
+
+/* ========================================
+   Expander
+   ======================================== */
+.expander {
+    margin-bottom: 1rem;
+}
+
+.expander-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    padding: 0.3rem 0;
+    user-select: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--border-lighter);
+}
+
+.expander-header:hover {
+    color: var(--link);
+}
+
+.expander-chevron {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    width: 1em;
+    text-align: center;
+}
+
+.expander-title {
+    flex: 1;
+}
+
+.expander-body {
+    padding-top: 0.5rem;
 }
 
 /* ========================================
@@ -1821,7 +2089,7 @@ button.btn-danger:hover {
     .history-list tr {
         display: block;
         padding: 0.5rem 0;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--border-lighter);
     }
 
     .tag-list td,

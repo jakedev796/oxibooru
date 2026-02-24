@@ -2,10 +2,13 @@ use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::components::{Router, Routes, Route};
 use leptos_router::path;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 
 use crate::api::ApiClient;
 use crate::auth::AuthState;
 use crate::components::navigation::Navigation;
+use crate::keyboard::KeyboardShortcuts;
 use oxibooru_shared::info::PublicConfig;
 use crate::pages::comments_page::CommentsPage;
 use crate::pages::help::HelpPage;
@@ -57,6 +60,73 @@ pub fn App() -> impl IntoView {
     // Create settings state
     let settings = SettingsState::new();
     provide_context(settings);
+
+    // Dark theme: toggle body class based on settings
+    Effect::new(move || {
+        let dark = settings.inner.with(|s| s.dark_theme);
+        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+            if let Some(body) = doc.body() {
+                let class_list = body.class_list();
+                if dark {
+                    let _ = class_list.add_1("darktheme");
+                } else {
+                    let _ = class_list.remove_1("darktheme");
+                }
+            }
+        }
+    });
+
+    // Keyboard shortcuts
+    let shortcuts = KeyboardShortcuts::new();
+    provide_context(shortcuts);
+
+    // Register global shortcut: Q to focus search input
+    shortcuts.register("q", Callback::new(move |()| {
+        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+            if let Some(el) = doc.get_element_by_id("search-input") {
+                if let Ok(input) = el.dyn_into::<web_sys::HtmlElement>() {
+                    let _ = input.focus();
+                }
+            }
+        }
+    }));
+
+    // Global keydown listener
+    if let Some(window) = web_sys::window() {
+        let handler = Closure::<dyn Fn(web_sys::KeyboardEvent)>::new(move |ev: web_sys::KeyboardEvent| {
+            // Check if keyboard shortcuts are enabled
+            if !settings.inner.with_untracked(|s| s.keyboard_shortcuts) {
+                return;
+            }
+
+            // Skip when focus is on an input element
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                if let Some(active) = doc.active_element() {
+                    let tag = active.tag_name().to_uppercase();
+                    if tag == "INPUT" || tag == "TEXTAREA" || tag == "SELECT" {
+                        return;
+                    }
+                }
+            }
+
+            // Build key string
+            let key = ev.key();
+            let lookup = if ev.ctrl_key() || ev.meta_key() {
+                format!("ctrl+{}", key.to_lowercase())
+            } else {
+                key
+            };
+
+            if shortcuts.dispatch(&lookup) {
+                ev.prevent_default();
+            }
+        });
+        let _ = window.add_event_listener_with_callback(
+            "keydown",
+            handler.as_ref().unchecked_ref(),
+        );
+        handler.forget();
+    }
 
     // Server config context — used by registration, password reset, etc.
     let server_config: RwSignal<Option<PublicConfig>> = RwSignal::new(None);

@@ -6,6 +6,7 @@ const STORAGE_KEY: &str = "oxibooru-settings";
 
 /// Client-side user preferences, persisted in localStorage.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Settings {
     pub posts_per_page: u32,
     pub tag_suggestions_enabled: bool,
@@ -16,6 +17,7 @@ pub struct Settings {
     pub upscale_small_posts: bool,
     pub endless_scroll: bool,
     pub tag_underscores: bool,
+    pub keyboard_shortcuts: bool,
     pub fit_mode: String,
 }
 
@@ -31,6 +33,7 @@ impl Default for Settings {
             upscale_small_posts: false,
             endless_scroll: false,
             tag_underscores: false,
+            keyboard_shortcuts: true,
             fit_mode: "fit-both".to_string(),
         }
     }
@@ -86,6 +89,7 @@ mod tests {
         assert!(!s.upscale_small_posts);
         assert!(!s.endless_scroll);
         assert!(!s.tag_underscores);
+        assert!(s.keyboard_shortcuts);
         assert_eq!(s.fit_mode, "fit-both");
     }
 

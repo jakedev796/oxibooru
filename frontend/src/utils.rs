@@ -1,5 +1,6 @@
 use leptos::prelude::*;
 use leptos_router::hooks::use_query_map;
+use wasm_bindgen::prelude::*;
 
 /// Parsed list page query parameters.
 #[derive(Debug, Clone, PartialEq)]
@@ -40,6 +41,48 @@ pub fn build_list_url(base: &str, query: &str, offset: i64, limit: i64) -> Strin
     } else {
         format!("{base}?{}", parts.join("&"))
     }
+}
+
+/// Set up a scroll event listener that fires `on_threshold` when the user
+/// scrolls near the bottom of the page (within 300px). Automatically
+/// guards against duplicate calls via `loading_more` and `has_more`.
+/// Registers cleanup to remove the listener when the component is unmounted.
+pub fn setup_scroll_listener(
+    loading_more: RwSignal<bool>,
+    has_more: Signal<bool>,
+    on_threshold: impl Fn() + 'static,
+) {
+    let handler = Closure::wrap(Box::new(move || {
+        if loading_more.get_untracked() || !has_more.get_untracked() {
+            return;
+        }
+        if let Some(win) = web_sys::window() {
+            if let Some(doc) = win.document() {
+                if let Some(el) = doc.document_element() {
+                    let scroll_top = el.scroll_top();
+                    let scroll_height = el.scroll_height();
+                    let client_height = el.client_height();
+                    if scroll_height - scroll_top - client_height < 300 {
+                        on_threshold();
+                    }
+                }
+            }
+        }
+    }) as Box<dyn FnMut()>);
+
+    let js_fn: js_sys::Function = handler.as_ref().unchecked_ref::<js_sys::Function>().clone();
+    handler.forget();
+    let js_fn_cleanup = js_fn.clone();
+
+    if let Some(win) = web_sys::window() {
+        let _ = win.add_event_listener_with_callback("scroll", &js_fn);
+    }
+
+    on_cleanup(move || {
+        if let Some(win) = web_sys::window() {
+            let _ = win.remove_event_listener_with_callback("scroll", &js_fn_cleanup);
+        }
+    });
 }
 
 /// URL-encode a string.

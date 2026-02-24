@@ -26,6 +26,7 @@ pub fn SearchBar(
         <form class="search-bar" on:submit=on_form_submit>
             <input
                 type="text"
+                id="search-input"
                 placeholder="Search…"
                 prop:value=move || input.get()
                 on:input=move |ev| set_input.set(event_target_value(&ev))

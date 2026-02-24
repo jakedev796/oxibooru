@@ -1,10 +1,12 @@
 pub mod comment_form;
 pub mod comment_list;
+pub mod expander;
 pub mod favorite_widget;
 pub mod markdown;
 pub mod navigation;
 pub mod pagination;
 pub mod post_content;
+pub mod post_notes;
 pub mod post_thumbnail;
 pub mod file_dropper;
 pub mod pool_input;

@@ -4,12 +4,16 @@ use leptos_meta::Title;
 use leptos_router::hooks::{use_navigate, use_params_map};
 use oxibooru_shared::enums::PostSafety;
 use oxibooru_shared::request::DeleteBody;
+use wasm_bindgen::JsCast;
 
 use crate::api::posts::{FeatureBody, UpdatePostBody};
 use crate::api::{ApiClient, ApiError};
 use crate::auth::AuthState;
+use crate::components::expander::Expander;
 use crate::components::file_dropper::FileDropper;
 use crate::components::tag_input::TagInput;
+use crate::keyboard::KeyboardShortcuts;
+use oxibooru_shared::post::Note;
 
 #[component]
 pub fn PostEditPage() -> impl IntoView {
@@ -39,6 +43,8 @@ pub fn PostEditPage() -> impl IntoView {
     let (flag_loop, set_flag_loop) = signal(false);
     let (flag_sound, set_flag_sound) = signal(false);
     let (version, set_version) = signal(String::new());
+
+    let notes_signal: RwSignal<Vec<Note>> = RwSignal::new(Vec::new());
 
     let (content_token, set_content_token) = signal(Option::<String>::None);
     let (thumbnail_token, set_thumbnail_token) = signal(Option::<String>::None);
@@ -80,6 +86,7 @@ pub fn PostEditPage() -> impl IntoView {
                     set_flag_loop.set(flags.iter().any(|f| f == "loop"));
                     set_flag_sound.set(flags.iter().any(|f| f == "sound"));
                     set_version.set(post.version.unwrap_or_default());
+                    notes_signal.set(post.notes.unwrap_or_default());
                     set_loading.set(false);
                 }
                 Err(_) => {
@@ -240,6 +247,59 @@ pub fn PostEditPage() -> impl IntoView {
         auth.has_privilege("posts:delete:own") || auth.has_privilege("posts:delete:any");
     let can_feature = auth.has_privilege("posts:feature");
 
+    // Keyboard shortcuts: Ctrl+S to save
+    let shortcuts = expect_context::<KeyboardShortcuts>();
+
+    let save_form_ref: NodeRef<leptos::html::Form> = NodeRef::new();
+    shortcuts.register("ctrl+s", Callback::new(move |()| {
+        if let Some(form) = save_form_ref.get() {
+            let _ = form.request_submit();
+        }
+    }));
+
+    // T to focus tag input
+    shortcuts.register("t", Callback::new(move |()| {
+        if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+            if let Some(el) = doc.get_element_by_id("tag-input") {
+                if let Ok(input) = el.dyn_into::<web_sys::HtmlElement>() {
+                    let _ = input.focus();
+                }
+            }
+        }
+    }));
+
+    // Delete — trigger post deletion (with confirmation dialog)
+    if can_delete {
+        let nav_kb_delete = navigate.clone();
+        shortcuts.register("Delete", Callback::new(move |()| {
+            let confirmed = web_sys::window()
+                .and_then(|w| w.confirm_with_message("Delete this post?").ok())
+                .unwrap_or(false);
+            if !confirmed {
+                return;
+            }
+            let client = api.get_untracked();
+            let id = post_id();
+            let ver = version.get_untracked();
+            let nav = nav_kb_delete.clone();
+            leptos::task::spawn_local(async move {
+                if client
+                    .delete_post(id, &DeleteBody { version: ver })
+                    .await
+                    .is_ok()
+                {
+                    nav("/posts", Default::default());
+                }
+            });
+        }));
+    }
+
+    on_cleanup(move || {
+        shortcuts.unregister("ctrl+s");
+        shortcuts.unregister("t");
+        shortcuts.unregister("Delete");
+    });
+
     view! {
         <Title text=move || format!("Edit Post {}", post_id()) />
         <div class="content-wrapper">
@@ -248,6 +308,7 @@ pub fn PostEditPage() -> impl IntoView {
             {move || load_error.get().then(|| view! { <p class="error">"Post not found."</p> })}
             <form
                 class="form-grid"
+                node_ref=save_form_ref
                 on:submit=on_submit
                 style:display=move || if loading.get() || load_error.get() { "none" } else { "" }
             >
@@ -326,17 +387,33 @@ pub fn PostEditPage() -> impl IntoView {
                     </label>
                 </div>
 
-                <div class="form-row">
-                    <label>"Replace content (optional)"</label>
-                    <FileDropper on_file=on_content_file />
-                    {move || content_token.get().map(|_| view! { <p class="success">"New content uploaded."</p> })}
-                </div>
+                <Expander name="post-edit-files".to_string() title="Replace Files".to_string()>
+                    <div class="form-row">
+                        <label>"Replace content (optional)"</label>
+                        <FileDropper on_file=on_content_file />
+                        {move || content_token.get().map(|_| view! { <p class="success">"New content uploaded."</p> })}
+                    </div>
+                    <div class="form-row">
+                        <label>"Replace thumbnail (optional)"</label>
+                        <FileDropper on_file=on_thumb_file accept="image/*" />
+                        {move || thumbnail_token.get().map(|_| view! { <p class="success">"New thumbnail uploaded."</p> })}
+                    </div>
+                </Expander>
 
-                <div class="form-row">
-                    <label>"Replace thumbnail (optional)"</label>
-                    <FileDropper on_file=on_thumb_file accept="image/*" />
-                    {move || thumbnail_token.get().map(|_| view! { <p class="success">"New thumbnail uploaded."</p> })}
-                </div>
+                {move || {
+                    let notes = notes_signal.get();
+                    (!notes.is_empty()).then(|| view! {
+                        <div class="form-row">
+                            <label>{format!("Notes ({})", notes.len())}</label>
+                            <ul class="notes-list-readonly">
+                                {notes.iter().map(|note| {
+                                    let html = crate::components::markdown::render_markdown(&note.text);
+                                    view! { <li inner_html=html /> }
+                                }).collect_view()}
+                            </ul>
+                        </div>
+                    })
+                }}
 
                 <div class="form-row buttons">
                     <button type="submit" disabled=move || submitting.get() || uploading.get()>
