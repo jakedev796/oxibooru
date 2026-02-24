@@ -45,7 +45,8 @@ jobs:
           file: frontend/Dockerfile
           platforms: linux/amd64
           push: true
+          # TODO: Revert to oxibooru/frontend for production
           tags: |
-            oxibooru/frontend:latest
-            oxibooru/frontend:${{ env.major_tag }}
-            oxibooru/frontend:${{ env.minor_tag }}
+            boker02/frontend:latest
+            boker02/frontend:${{ env.major_tag }}
+            boker02/frontend:${{ env.minor_tag }}

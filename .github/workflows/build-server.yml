@@ -56,8 +56,9 @@ jobs:
             BUILD_INFO=${{ env.build_info }}
             BUILD_DATE=${{ env.build_date }}
             SOURCE_COMMIT=${{ github.sha }}
-            DOCKER_REPO=oxibooru/server
-          outputs: type=image,name=oxibooru/server,push-by-digest=true,name-canonical=true,push=true
+            # TODO: Revert to oxibooru/server for production
+            DOCKER_REPO=boker02/server
+          outputs: type=image,name=boker02/server,push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -111,7 +112,8 @@ jobs:
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create \
-            -t oxibooru/server:latest \
-            -t oxibooru/server:${{ env.major_tag }} \
-            -t oxibooru/server:${{ env.minor_tag }} \
-            $(printf 'oxibooru/server@sha256:%s ' *)
+            # TODO: Revert to oxibooru/server for production
+            -t boker02/server:latest \
+            -t boker02/server:${{ env.major_tag }} \
+            -t boker02/server:${{ env.minor_tag }} \
+            $(printf 'boker02/server@sha256:%s ' *)

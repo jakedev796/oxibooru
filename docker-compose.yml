@@ -4,7 +4,7 @@
 # orchestration services
 services:
   server:
-    image: oxibooru/server:latest
+    image: boker02/server:latest # TODO: Revert to oxibooru/server for production
     build:
       context: server
       args: 
@@ -29,7 +29,7 @@ services:
     stop_signal: SIGINT
 
   frontend:
-    image: oxibooru/frontend:latest
+    image: boker02/frontend:latest # TODO: Revert to oxibooru/frontend for production
     build:
       context: .
       dockerfile: frontend/Dockerfile
