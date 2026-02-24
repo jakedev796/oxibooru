@@ -32,7 +32,8 @@ jobs:
 
       - name: Determine metadata
         run: |
-          CLOSEST_VER="$(git tag --sort=-v:refname | head -n1 || echo '0.0.0')"
+          CLOSEST_VER="$(git tag --sort=-v:refname | head -n1)"
+          CLOSEST_VER="${CLOSEST_VER:-0.0.0}"
           CLOSEST_MAJOR_VER="$(echo ${CLOSEST_VER} | cut -d'.' -f1)"
           CLOSEST_MINOR_VER="$(echo ${CLOSEST_VER} | cut -d'.' -f2)"
           SHORT_COMMIT=$(echo $GITHUB_SHA | cut -c1-8)
@@ -87,7 +88,8 @@ jobs:
 
       - name: Determine metadata
         run: |
-          CLOSEST_VER="$(git tag --sort=-v:refname | head -n1 || echo '0.0.0')"
+          CLOSEST_VER="$(git tag --sort=-v:refname | head -n1)"
+          CLOSEST_VER="${CLOSEST_VER:-0.0.0}"
           CLOSEST_MAJOR_VER="$(echo ${CLOSEST_VER} | cut -d'.' -f1)"
           CLOSEST_MINOR_VER="$(echo ${CLOSEST_VER} | cut -d'.' -f2)"
           echo "major_tag=${CLOSEST_MAJOR_VER}" >> $GITHUB_ENV
