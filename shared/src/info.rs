@@ -4,9 +4,9 @@ use crate::enums::UserRank;
 use crate::post::PostInfo;
 
 /// Response from `GET /info`.
-/// Note: This type does NOT use `rename_all = "camelCase"` — the server serializes
-/// field names as snake_case for this endpoint.
+/// The server serializes field names as camelCase for this endpoint.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct InfoResponse {
     pub post_count: i64,
     pub disk_usage: i64,
@@ -367,12 +367,12 @@ mod tests {
     #[test]
     fn deserialize_info_response() {
         let json = format!(r#"{{
-            "post_count": 12345,
-            "disk_usage": 1073741824,
-            "featured_post": null,
-            "featuring_time": null,
-            "featuring_user": null,
-            "server_time": "2024-01-15T10:30:45Z",
+            "postCount": 12345,
+            "diskUsage": 1073741824,
+            "featuredPost": null,
+            "featuringTime": null,
+            "featuringUser": null,
+            "serverTime": "2024-01-15T10:30:45Z",
             "config": {{
                 "name": "Test Booru",
                 "defaultUserRank": "regular",
