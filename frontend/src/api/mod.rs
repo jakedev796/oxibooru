@@ -26,6 +26,48 @@ pub enum ApiError {
     Network(String),
 }
 
+impl ApiError {
+    /// Check if this is an authentication error (401-equivalent).
+    pub fn is_auth_error(&self) -> bool {
+        match self {
+            ApiError::Server(e) => matches!(
+                e.name.as_str(),
+                "NotLoggedIn"
+                    | "MalformedCredentials"
+                    | "ExpiredToken"
+                    | "InvalidAuthType"
+                    | "UsernamePasswordMismatch"
+                    | "UsernameTokenMismatch"
+            ),
+            _ => false,
+        }
+    }
+
+    /// Check if this is a version conflict error (409-equivalent).
+    pub fn is_conflict(&self) -> bool {
+        match self {
+            ApiError::Server(e) => e.name == "ResourceModified",
+            _ => false,
+        }
+    }
+
+    /// Check if this is a not-found error (404-equivalent).
+    pub fn is_not_found(&self) -> bool {
+        match self {
+            ApiError::Server(e) => e.name.ends_with("NotFound"),
+            _ => false,
+        }
+    }
+
+    /// Get a user-friendly message.
+    pub fn user_message(&self) -> String {
+        match self {
+            ApiError::Server(e) => e.description.clone(),
+            ApiError::Network(msg) => format!("Network error: {msg}"),
+        }
+    }
+}
+
 impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

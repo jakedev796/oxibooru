@@ -4,6 +4,8 @@ use leptos_router::hooks::use_navigate;
 use oxibooru_shared::user::UserInfo;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::components::pagination::Pagination;
 use crate::components::search_bar::SearchBar;
 use crate::settings::SettingsState;
@@ -12,6 +14,7 @@ use crate::utils::{build_list_url, format_time_short, setup_scroll_listener, use
 #[component]
 pub fn UserListPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let settings = expect_context::<SettingsState>();
     let params = use_list_query_params(30);
     let navigate = use_navigate();
@@ -20,7 +23,12 @@ pub fn UserListPage() -> impl IntoView {
     let users = LocalResource::new(move || {
         let client = api.get();
         let p = params.get();
-        async move { client.get_users(&p.query, p.offset, p.limit).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_users(&p.query, p.offset, p.limit).await;
+            loading.finish();
+            result
+        }
     });
 
     let query_signal = Signal::derive(move || params.get().query);
@@ -76,7 +84,7 @@ pub fn UserListPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading users..."</p> }>
                 {move || Suspend::new(async move {
                     match users.await {
-                        Some(data) => {
+                        Ok(data) => {
                             if endless {
                                 accumulated.set(data.results);
                                 loaded_up_to.set(data.offset + accumulated.get_untracked().len() as i64);
@@ -127,8 +135,8 @@ pub fn UserListPage() -> impl IntoView {
                                 }.into_any()
                             }
                         }
-                        None => view! {
-                            <p class="error">"Failed to load users."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

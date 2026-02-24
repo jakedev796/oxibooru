@@ -6,6 +6,8 @@ use oxibooru_shared::comment::CommentInfo;
 use oxibooru_shared::enums::{PostSafety, PostType, Rating};
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::auth::AuthState;
 use crate::components::comment_form::CommentForm;
 use crate::components::comment_list::CommentList;
@@ -33,6 +35,7 @@ fn fit_mode_label(mode: &str) -> &'static str {
 #[component]
 pub fn PostViewPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let auth = expect_context::<AuthState>();
     let settings = expect_context::<SettingsState>();
     let params = use_params_map();
@@ -44,7 +47,12 @@ pub fn PostViewPage() -> impl IntoView {
     let post = LocalResource::new(move || {
         let client = api.get();
         let id = post_id.get();
-        async move { client.get_post(id).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_post(id).await;
+            loading.finish();
+            result
+        }
     });
 
     let neighbors = LocalResource::new(move || {
@@ -128,7 +136,7 @@ pub fn PostViewPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading post..."</p> }>
                 {move || Suspend::new(async move {
                     match post.await {
-                        Some(post) => {
+                        Ok(post) => {
                             let id = post.id.unwrap_or(0);
                             let safety = post.safety.unwrap_or(PostSafety::Safe);
                             let post_type = post.type_.unwrap_or(PostType::Image);
@@ -408,8 +416,8 @@ pub fn PostViewPage() -> impl IntoView {
                                 </Suspense>
                             }.into_any()
                         }
-                        None => view! {
-                            <p class="error">"Failed to load post."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

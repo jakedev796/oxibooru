@@ -3,11 +3,14 @@ use leptos_meta::Title;
 use leptos_router::hooks::use_params_map;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::utils::format_time_short;
 
 #[component]
 pub fn UserViewPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let params = use_params_map();
 
     let user_name = Memo::new(move |_| {
@@ -17,7 +20,12 @@ pub fn UserViewPage() -> impl IntoView {
     let user = LocalResource::new(move || {
         let client = api.get();
         let name = user_name.get();
-        async move { client.get_user(&name).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_user(&name).await;
+            loading.finish();
+            result
+        }
     });
 
     view! {
@@ -26,7 +34,7 @@ pub fn UserViewPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading user..."</p> }>
                 {move || Suspend::new(async move {
                     match user.await {
-                        Some(user) => {
+                        Ok(user) => {
                             let name = user.name.unwrap_or_default();
                             let avatar_url = user.avatar_url.unwrap_or_default();
                             let rank = user.rank
@@ -76,8 +84,8 @@ pub fn UserViewPage() -> impl IntoView {
                                 </div>
                             }.into_any()
                         }
-                        None => view! {
-                            <p class="error">"Failed to load user."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

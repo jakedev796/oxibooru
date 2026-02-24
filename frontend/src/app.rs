@@ -7,8 +7,11 @@ use wasm_bindgen::JsCast;
 
 use crate::api::ApiClient;
 use crate::auth::AuthState;
+use crate::components::category_styles::CategoryStyles;
+use crate::components::loading_bar::{LoadingBar, LoadingState};
 use crate::components::navigation::Navigation;
 use crate::keyboard::KeyboardShortcuts;
+use oxibooru_shared::category::{PoolCategoryInfo, TagCategoryInfo};
 use oxibooru_shared::info::PublicConfig;
 use crate::pages::comments_page::CommentsPage;
 use crate::pages::help::HelpPage;
@@ -60,6 +63,10 @@ pub fn App() -> impl IntoView {
     // Create settings state
     let settings = SettingsState::new();
     provide_context(settings);
+
+    // Loading state
+    let loading = LoadingState::new();
+    provide_context(loading);
 
     // Dark theme: toggle body class based on settings
     Effect::new(move || {
@@ -132,6 +139,12 @@ pub fn App() -> impl IntoView {
     let server_config: RwSignal<Option<PublicConfig>> = RwSignal::new(None);
     provide_context(server_config);
 
+    // Category color contexts — populated on startup for dynamic CSS
+    let tag_categories: RwSignal<Vec<TagCategoryInfo>> = RwSignal::new(Vec::new());
+    provide_context(tag_categories);
+    let pool_categories: RwSignal<Vec<PoolCategoryInfo>> = RwSignal::new(Vec::new());
+    provide_context(pool_categories);
+
     // Fetch initial server info to populate privileges and config
     let initial_info = LocalResource::new(move || {
         let client = api.get();
@@ -151,9 +164,22 @@ pub fn App() -> impl IntoView {
         }
     });
 
+    // Fetch tag and pool categories for dynamic CSS colors
+    leptos::task::spawn_local(async move {
+        let client = api.get_untracked();
+        if let Ok(data) = client.get_tag_categories().await {
+            tag_categories.set(data.results);
+        }
+        if let Ok(data) = client.get_pool_categories().await {
+            pool_categories.set(data.results);
+        }
+    });
+
     view! {
         <Title formatter=|text| format!("{text} — oxibooru") />
         <Router>
+            <CategoryStyles />
+            <LoadingBar />
             <Navigation />
             <main>
                 <Routes fallback=|| view! { <NotFoundPage /> }>

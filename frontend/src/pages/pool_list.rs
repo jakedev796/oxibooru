@@ -4,6 +4,8 @@ use leptos_router::hooks::use_navigate;
 use oxibooru_shared::pool::PoolInfo;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::components::pagination::Pagination;
 use crate::components::search_bar::SearchBar;
 use crate::settings::SettingsState;
@@ -14,6 +16,7 @@ const FIELDS: &str = "id,names,creationTime,postCount,category";
 #[component]
 pub fn PoolListPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let settings = expect_context::<SettingsState>();
     let params = use_list_query_params(50);
     let navigate = use_navigate();
@@ -22,7 +25,12 @@ pub fn PoolListPage() -> impl IntoView {
     let pools = LocalResource::new(move || {
         let client = api.get();
         let p = params.get();
-        async move { client.get_pools(&p.query, p.offset, p.limit, FIELDS).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_pools(&p.query, p.offset, p.limit, FIELDS).await;
+            loading.finish();
+            result
+        }
     });
 
     let query_signal = Signal::derive(move || params.get().query);
@@ -78,7 +86,7 @@ pub fn PoolListPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading pools..."</p> }>
                 {move || Suspend::new(async move {
                     match pools.await {
-                        Some(data) => {
+                        Ok(data) => {
                             if endless {
                                 accumulated.set(data.results);
                                 loaded_up_to.set(data.offset + accumulated.get_untracked().len() as i64);
@@ -149,8 +157,8 @@ pub fn PoolListPage() -> impl IntoView {
                                 }.into_any()
                             }
                         }
-                        None => view! {
-                            <p class="error">"Failed to load pools."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

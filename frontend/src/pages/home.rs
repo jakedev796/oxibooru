@@ -2,14 +2,22 @@ use leptos::prelude::*;
 use leptos_meta::Title;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 
 #[component]
 pub fn HomePage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
 
     let info = LocalResource::new(move || {
         let client = api.get();
-        async move { client.get_info().await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_info().await;
+            loading.finish();
+            result
+        }
     });
 
     view! {
@@ -18,7 +26,7 @@ pub fn HomePage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading..."</p> }>
                 {move || Suspend::new(async move {
                     match info.await {
-                        Some(info) => view! {
+                        Ok(info) => view! {
                             <div class="home-info">
                                 <h1>{info.config.name.clone()}</h1>
                                 <dl>
@@ -44,8 +52,8 @@ pub fn HomePage() -> impl IntoView {
                                 })}
                             </div>
                         }.into_any(),
-                        None => view! {
-                            <p class="error">"Failed to load server info."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

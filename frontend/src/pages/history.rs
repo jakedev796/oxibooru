@@ -3,6 +3,8 @@ use leptos_meta::Title;
 use oxibooru_shared::snapshot::SnapshotInfo;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::components::pagination::Pagination;
 use crate::settings::SettingsState;
 use crate::utils::{build_list_url, format_time_short, setup_scroll_listener, use_list_query_params};
@@ -10,6 +12,7 @@ use crate::utils::{build_list_url, format_time_short, setup_scroll_listener, use
 #[component]
 pub fn HistoryPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let settings = expect_context::<SettingsState>();
     let params = use_list_query_params(25);
     let endless = settings.inner.get_untracked().endless_scroll;
@@ -17,7 +20,12 @@ pub fn HistoryPage() -> impl IntoView {
     let snapshots = LocalResource::new(move || {
         let client = api.get();
         let p = params.get();
-        async move { client.get_snapshots(p.offset, p.limit).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_snapshots(p.offset, p.limit).await;
+            loading.finish();
+            result
+        }
     });
 
     // Endless scroll state
@@ -61,7 +69,7 @@ pub fn HistoryPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading history..."</p> }>
                 {move || Suspend::new(async move {
                     match snapshots.await {
-                        Some(data) => {
+                        Ok(data) => {
                             if endless {
                                 accumulated.set(data.results);
                                 loaded_up_to.set(data.offset + accumulated.get_untracked().len() as i64);
@@ -138,8 +146,8 @@ pub fn HistoryPage() -> impl IntoView {
                                 }.into_any()
                             }
                         }
-                        None => view! {
-                            <p class="error">"Failed to load history."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

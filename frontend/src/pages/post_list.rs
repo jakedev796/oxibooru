@@ -11,6 +11,8 @@ use wasm_bindgen::JsCast;
 
 use crate::api::posts::UpdatePostBody;
 use crate::api::{ApiClient, ApiError};
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::auth::AuthState;
 use crate::components::pagination::Pagination;
 use crate::components::post_thumbnail::PostThumbnail;
@@ -24,6 +26,7 @@ const FIELDS: &str = "id,thumbnailUrl,type,safety,score,favoriteCount,commentCou
 #[component]
 pub fn PostListPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let auth = expect_context::<AuthState>();
     let settings = expect_context::<SettingsState>();
     let default_limit = settings.inner.get_untracked().posts_per_page as i64;
@@ -34,7 +37,12 @@ pub fn PostListPage() -> impl IntoView {
     let posts = LocalResource::new(move || {
         let client = api.get();
         let p = params.get();
-        async move { client.get_posts(&p.query, p.offset, p.limit, FIELDS).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_posts(&p.query, p.offset, p.limit, FIELDS).await;
+            loading.finish();
+            result
+        }
     });
 
     let query_signal = Signal::derive(move || params.get().query);
@@ -383,7 +391,7 @@ pub fn PostListPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading posts..."</p> }>
                 {move || Suspend::new(async move {
                     match posts.await {
-                        Some(data) => {
+                        Ok(data) => {
                             if endless {
                                 // Reset accumulated state from initial/new page
                                 accumulated.set(data.results.clone());
@@ -522,8 +530,8 @@ pub fn PostListPage() -> impl IntoView {
                                 }.into_any()
                             }
                         }
-                        None => view! {
-                            <p class="error">"Failed to load posts."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}
@@ -533,8 +541,5 @@ pub fn PostListPage() -> impl IntoView {
 }
 
 fn format_api_error(e: &ApiError) -> String {
-    match e {
-        ApiError::Server(resp) => resp.description.clone(),
-        ApiError::Network(msg) => msg.clone(),
-    }
+    e.user_message()
 }

@@ -3,6 +3,8 @@ use leptos_meta::Title;
 use oxibooru_shared::post::PostInfo;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::components::markdown::Markdown;
 use crate::components::pagination::Pagination;
 use crate::settings::SettingsState;
@@ -16,6 +18,7 @@ const FIELDS: &str = "id,thumbnailUrl,comments,commentCount";
 #[component]
 pub fn CommentsPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let settings = expect_context::<SettingsState>();
     let params = use_list_query_params(10);
     let endless = settings.inner.get_untracked().endless_scroll;
@@ -28,7 +31,12 @@ pub fn CommentsPage() -> impl IntoView {
         if !p.query.is_empty() {
             query = format!("{} {query}", p.query);
         }
-        async move { client.get_posts(&query, p.offset, p.limit, FIELDS).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_posts(&query, p.offset, p.limit, FIELDS).await;
+            loading.finish();
+            result
+        }
     });
 
     // Endless scroll state
@@ -77,7 +85,7 @@ pub fn CommentsPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading comments..."</p> }>
                 {move || Suspend::new(async move {
                     match posts.await {
-                        Some(data) => {
+                        Ok(data) => {
                             if endless {
                                 accumulated.set(data.results);
                                 loaded_up_to.set(data.offset + accumulated.get_untracked().len() as i64);
@@ -127,8 +135,8 @@ pub fn CommentsPage() -> impl IntoView {
                                 }.into_any()
                             }
                         }
-                        None => view! {
-                            <p class="error">"Failed to load comments."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

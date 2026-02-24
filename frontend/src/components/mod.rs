@@ -1,7 +1,10 @@
+pub mod api_error;
+pub mod category_styles;
 pub mod comment_form;
 pub mod comment_list;
 pub mod expander;
 pub mod favorite_widget;
+pub mod loading_bar;
 pub mod markdown;
 pub mod navigation;
 pub mod pagination;

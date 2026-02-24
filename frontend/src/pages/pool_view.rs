@@ -3,12 +3,15 @@ use leptos_meta::Title;
 use leptos_router::hooks::use_params_map;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::components::markdown::Markdown;
 use crate::utils::format_time_short;
 
 #[component]
 pub fn PoolViewPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let params = use_params_map();
 
     let pool_id = Memo::new(move |_| {
@@ -18,7 +21,12 @@ pub fn PoolViewPage() -> impl IntoView {
     let pool = LocalResource::new(move || {
         let client = api.get();
         let id = pool_id.get();
-        async move { client.get_pool(id).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_pool(id).await;
+            loading.finish();
+            result
+        }
     });
 
     view! {
@@ -27,7 +35,7 @@ pub fn PoolViewPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading pool..."</p> }>
                 {move || Suspend::new(async move {
                     match pool.await {
-                        Some(pool) => {
+                        Ok(pool) => {
                             let names = pool.names.unwrap_or_default();
                             let primary_name = names.first().cloned().unwrap_or_default();
                             let aliases = if names.len() > 1 {
@@ -94,8 +102,8 @@ pub fn PoolViewPage() -> impl IntoView {
                                 </div>
                             }.into_any()
                         }
-                        None => view! {
-                            <p class="error">"Failed to load pool."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}

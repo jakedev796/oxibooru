@@ -3,12 +3,15 @@ use leptos_meta::Title;
 use leptos_router::hooks::use_params_map;
 
 use crate::api::ApiClient;
+use crate::components::api_error::ApiErrorMessage;
+use crate::components::loading_bar::LoadingState;
 use crate::components::markdown::Markdown;
 use crate::utils::format_time_short;
 
 #[component]
 pub fn TagViewPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let loading = expect_context::<LoadingState>();
     let params = use_params_map();
 
     let tag_name = Memo::new(move |_| {
@@ -18,7 +21,12 @@ pub fn TagViewPage() -> impl IntoView {
     let tag = LocalResource::new(move || {
         let client = api.get();
         let name = tag_name.get();
-        async move { client.get_tag(&name).await.ok() }
+        async move {
+            loading.start();
+            let result = client.get_tag(&name).await;
+            loading.finish();
+            result
+        }
     });
 
     let siblings = LocalResource::new(move || {
@@ -33,7 +41,7 @@ pub fn TagViewPage() -> impl IntoView {
             <Suspense fallback=|| view! { <p>"Loading tag..."</p> }>
                 {move || Suspend::new(async move {
                     match tag.await {
-                        Some(tag) => {
+                        Ok(tag) => {
                             let names = tag.names.unwrap_or_default();
                             let primary_name = names.first().cloned().unwrap_or_default();
                             let aliases = if names.len() > 1 {
@@ -152,8 +160,8 @@ pub fn TagViewPage() -> impl IntoView {
                                 </div>
                             }.into_any()
                         }
-                        None => view! {
-                            <p class="error">"Failed to load tag."</p>
+                        Err(e) => view! {
+                            <ApiErrorMessage error=e />
                         }.into_any(),
                     }
                 })}
