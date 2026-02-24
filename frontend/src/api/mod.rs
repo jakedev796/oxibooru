@@ -1,3 +1,4 @@
+pub mod categories;
 pub mod comments;
 pub mod info;
 pub mod password_reset;
@@ -5,6 +6,7 @@ pub mod pools;
 pub mod posts;
 pub mod snapshots;
 pub mod tags;
+pub mod uploads;
 pub mod user_tokens;
 pub mod users;
 
@@ -190,5 +192,66 @@ impl ApiClient {
                 Err(e) => Err(ApiError::Network(format!("HTTP {status}: {e}"))),
             }
         }
+    }
+
+    /// POST request with FormData body (multipart/form-data).
+    /// Do NOT set Content-Type manually — the browser handles the boundary.
+    pub async fn post_multipart<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        form_data: &web_sys::FormData,
+    ) -> Result<T, ApiError> {
+        let resp = self
+            .apply_auth(gloo_net::http::Request::post(&self.url(path)))
+            .body(form_data)
+            .map_err(|e| ApiError::Network(e.to_string()))?
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+        Self::parse_response(resp).await
+    }
+
+    /// PUT request with FormData body (multipart/form-data).
+    pub async fn put_multipart<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        form_data: &web_sys::FormData,
+    ) -> Result<T, ApiError> {
+        let resp = self
+            .apply_auth(gloo_net::http::Request::put(&self.url(path)))
+            .body(form_data)
+            .map_err(|e| ApiError::Network(e.to_string()))?
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+        Self::parse_response(resp).await
+    }
+
+    /// POST request with no body (empty JSON object).
+    pub async fn post_no_body<T: DeserializeOwned>(
+        &self,
+        path: &str,
+    ) -> Result<T, ApiError> {
+        let resp = self
+            .apply_auth(gloo_net::http::Request::post(&self.url(path)))
+            .json(&serde_json::json!({}))
+            .map_err(|e| ApiError::Network(e.to_string()))?
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+        Self::parse_response(resp).await
+    }
+
+    /// DELETE request that returns a deserialized response body.
+    pub async fn delete_with_response<T: DeserializeOwned>(
+        &self,
+        path: &str,
+    ) -> Result<T, ApiError> {
+        let resp = self
+            .apply_auth(gloo_net::http::Request::delete(&self.url(path)))
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+        Self::parse_response(resp).await
     }
 }

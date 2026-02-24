@@ -1,6 +1,14 @@
+pub mod comment_form;
+pub mod comment_list;
+pub mod favorite_widget;
 pub mod markdown;
 pub mod navigation;
 pub mod pagination;
 pub mod post_content;
 pub mod post_thumbnail;
+pub mod file_dropper;
+pub mod pool_input;
+pub mod score_widget;
 pub mod search_bar;
+pub mod tag_autocomplete;
+pub mod tag_input;

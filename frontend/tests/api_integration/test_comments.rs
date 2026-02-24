@@ -31,3 +31,80 @@ async fn get_comments_have_expected_fields() {
         assert!(comment.text.is_some(), "comment should have text");
     }
 }
+
+/// POST /comments without auth should fail.
+#[tokio::test]
+async fn create_comment_unauthenticated_fails() {
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/comments");
+    let resp = client
+        .post(&url)
+        .json(&serde_json::json!({
+            "postId": 1,
+            "text": "test comment"
+        }))
+        .send()
+        .await
+        .expect("backend not reachable");
+    let status = resp.status().as_u16();
+    assert!(
+        status == 401 || status == 403,
+        "unauthenticated POST /comments should fail, got {status}"
+    );
+}
+
+/// PUT /comment/{id}/score without auth should fail.
+#[tokio::test]
+async fn score_comment_unauthenticated_fails() {
+    let list_url = format!("{BACKEND_URL}/comments?query=&offset=0&limit=1");
+    let list_resp = reqwest::get(&list_url).await.expect("backend not reachable");
+    let page: PagedResponse<CommentInfo> = list_resp.json().await.unwrap();
+
+    if page.results.is_empty() {
+        eprintln!("SKIP: no comments in database");
+        return;
+    }
+
+    let comment_id = page.results[0].id.unwrap();
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/comment/{comment_id}/score");
+    let resp = client
+        .put(&url)
+        .json(&serde_json::json!({ "score": 1 }))
+        .send()
+        .await
+        .expect("backend not reachable");
+    let status = resp.status().as_u16();
+    assert!(
+        status == 401 || status == 403,
+        "unauthenticated PUT /comment/{comment_id}/score should fail, got {status}"
+    );
+}
+
+/// DELETE /comment/{id} without auth should fail.
+#[tokio::test]
+async fn delete_comment_unauthenticated_fails() {
+    let list_url = format!("{BACKEND_URL}/comments?query=&offset=0&limit=1");
+    let list_resp = reqwest::get(&list_url).await.expect("backend not reachable");
+    let page: PagedResponse<CommentInfo> = list_resp.json().await.unwrap();
+
+    if page.results.is_empty() {
+        eprintln!("SKIP: no comments in database");
+        return;
+    }
+
+    let comment_id = page.results[0].id.unwrap();
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/comment/{comment_id}");
+    let resp = client
+        .delete(&url)
+        .json(&serde_json::json!({ "version": "fake" }))
+        .send()
+        .await
+        .expect("backend not reachable");
+    let status = resp.status().as_u16();
+    assert!(
+        status == 401 || status == 403,
+        "unauthenticated DELETE /comment/{comment_id} should fail, got {status}"
+    );
+}

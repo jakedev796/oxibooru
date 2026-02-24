@@ -1,3 +1,6 @@
+mod test_comment_form;
+mod test_favorite_widget;
+mod test_file_dropper;
 mod test_login;
 mod test_markdown;
 mod test_navigation;
@@ -5,4 +8,6 @@ mod test_pagination;
 mod test_post_content;
 mod test_post_thumbnail;
 mod test_register;
+mod test_score_widget;
 mod test_settings;
+mod test_tag_input;

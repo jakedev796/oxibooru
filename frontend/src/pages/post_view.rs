@@ -1,17 +1,24 @@
 use leptos::prelude::*;
 use leptos_meta::Title;
 use leptos_router::hooks::use_params_map;
+use oxibooru_shared::comment::CommentInfo;
+use oxibooru_shared::enums::{PostSafety, PostType, Rating};
 
 use crate::api::ApiClient;
+use crate::auth::AuthState;
+use crate::components::comment_form::CommentForm;
+use crate::components::comment_list::CommentList;
+use crate::components::favorite_widget::FavoriteWidget;
 use crate::components::markdown::Markdown;
 use crate::components::post_content::PostContent;
+use crate::components::score_widget::ScoreWidget;
 use crate::settings::SettingsState;
 use crate::utils::{format_file_size, format_time_short};
-use oxibooru_shared::enums::{PostSafety, PostType};
 
 #[component]
 pub fn PostViewPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let auth = expect_context::<AuthState>();
     let settings = expect_context::<SettingsState>();
     let params = use_params_map();
 
@@ -45,7 +52,7 @@ pub fn PostViewPage() -> impl IntoView {
                             let fit_mode = settings.inner.get_untracked().fit_mode.clone();
                             let flags = post.flags.clone().unwrap_or_default();
 
-                            // Sidebar info
+                            // Static sidebar info
                             let file_size = post.file_size.map(format_file_size).unwrap_or_default();
                             let dimensions = match (post.canvas_width, post.canvas_height) {
                                 (Some(w), Some(h)) => format!("{w}x{h}"),
@@ -59,19 +66,60 @@ pub fn PostViewPage() -> impl IntoView {
                                 .unwrap_or_default();
                             let safety_str = format!("{safety:?}").to_lowercase();
                             let source = post.source.clone().unwrap_or_default();
-                            let score = post.score.unwrap_or(0);
-                            let fav_count = post.favorite_count.unwrap_or(0);
-                            let comment_count = post.comment_count.unwrap_or(0);
+                            let description = post.description.clone().unwrap_or_default();
+
+                            // Interactive signals
+                            let score_signal = RwSignal::new(post.score.unwrap_or(0));
+                            let own_score_signal = RwSignal::new(post.own_score.unwrap_or(Rating::None));
+                            let favorited_signal = RwSignal::new(post.own_favorite.unwrap_or(false));
+                            let fav_count_signal = RwSignal::new(post.favorite_count.unwrap_or(0));
+                            let comments_signal = RwSignal::new(post.comments.unwrap_or_default());
+
+                            // Post score callback
+                            let on_post_vote = Callback::new(move |rating: Rating| {
+                                let client = api.get_untracked();
+                                leptos::task::spawn_local(async move {
+                                    if let Ok(p) = client.score_post(id, rating).await {
+                                        score_signal.set(p.score.unwrap_or(0));
+                                        own_score_signal.set(p.own_score.unwrap_or(Rating::None));
+                                    }
+                                });
+                            });
+
+                            // Favorite toggle callback
+                            let on_toggle_fav = Callback::new(move |want_fav: bool| {
+                                let client = api.get_untracked();
+                                leptos::task::spawn_local(async move {
+                                    let result = if want_fav {
+                                        client.add_favorite(id).await
+                                    } else {
+                                        client.remove_favorite(id).await
+                                    };
+                                    if let Ok(p) = result {
+                                        favorited_signal.set(p.own_favorite.unwrap_or(false));
+                                        fav_count_signal.set(p.favorite_count.unwrap_or(0));
+                                    }
+                                });
+                            });
+
+                            // New comment callback
+                            let on_comment_created = Callback::new(move |comment: CommentInfo| {
+                                comments_signal.update(|list| list.push(comment));
+                            });
 
                             // Tags grouped by category
                             let tags = post.tags.unwrap_or_default();
                             let pools = post.pools.unwrap_or_default();
                             let relations = post.relations.unwrap_or_default();
-                            let comments = post.comments.unwrap_or_default();
-                            let description = post.description.clone().unwrap_or_default();
 
                             let uploader_href = format!("/user/{uploader}");
                             let safety_class = format!("safety-{safety_str}");
+
+                            // Privilege checks for action links
+                            let can_edit = auth.has_privilege("posts:edit:own") || auth.has_privilege("posts:edit:any");
+                            let can_merge = auth.has_privilege("posts:merge");
+                            let can_comment = auth.has_privilege("comments:create");
+                            let show_actions = can_edit || can_merge;
 
                             view! {
                                 <div class="post-view">
@@ -97,9 +145,12 @@ pub fn PostViewPage() -> impl IntoView {
                                                 <dt>"Uploader"</dt>
                                                 <dd><a href=uploader_href>{uploader}</a></dd>
                                                 <dt>"Uploaded"</dt><dd>{created}</dd>
-                                                <dt>"Score"</dt><dd>{score}</dd>
-                                                <dt>"Favorites"</dt><dd>{fav_count}</dd>
-                                                <dt>"Comments"</dt><dd>{comment_count}</dd>
+                                                <dt>"Score"</dt>
+                                                <dd><ScoreWidget score=score_signal own_score=own_score_signal on_vote=on_post_vote /></dd>
+                                                <dt>"Favorites"</dt>
+                                                <dd><FavoriteWidget favorited=favorited_signal count=fav_count_signal on_toggle=on_toggle_fav /></dd>
+                                                <dt>"Comments"</dt>
+                                                <dd>{move || comments_signal.get().len()}</dd>
                                             </dl>
                                             {(!source.is_empty()).then(|| {
                                                 let source_href = source.clone();
@@ -111,6 +162,24 @@ pub fn PostViewPage() -> impl IntoView {
                                                 }
                                             })}
                                         </section>
+
+                                        {show_actions.then(|| {
+                                            let edit_href = format!("/post/{id}/edit");
+                                            let merge_href = format!("/post/{id}/merge");
+                                            view! {
+                                                <section class="post-actions">
+                                                    <h2>"Actions"</h2>
+                                                    <ul>
+                                                        {can_edit.then(|| view! {
+                                                            <li><a href=edit_href>"Edit post"</a></li>
+                                                        })}
+                                                        {can_merge.then(|| view! {
+                                                            <li><a href=merge_href>"Merge post"</a></li>
+                                                        })}
+                                                    </ul>
+                                                </section>
+                                            }
+                                        })}
 
                                         {(!tags.is_empty()).then(|| view! {
                                             <section class="post-tags">
@@ -174,35 +243,10 @@ pub fn PostViewPage() -> impl IntoView {
 
                                 <section class="post-comments">
                                     <h2>"Comments"</h2>
-                                    {if comments.is_empty() {
-                                        view! { <p class="no-comments">"No comments yet."</p> }.into_any()
-                                    } else {
-                                        view! {
-                                            <div class="comments-list">
-                                                {comments.into_iter().map(|comment| {
-                                                    let author = comment.user.flatten()
-                                                        .map(|u| u.name)
-                                                        .unwrap_or_else(|| "Anonymous".to_string());
-                                                    let time = comment.creation_time.as_deref()
-                                                        .map(format_time_short)
-                                                        .unwrap_or_default();
-                                                    let text = comment.text.unwrap_or_default();
-                                                    let score = comment.score.unwrap_or(0);
-                                                    let author_href = format!("/user/{author}");
-                                                    view! {
-                                                        <div class="comment">
-                                                            <div class="comment-header">
-                                                                <a class="comment-author" href=author_href>{author}</a>
-                                                                <time>{time}</time>
-                                                                <span class="comment-score">{score}</span>
-                                                            </div>
-                                                            <Markdown text=text />
-                                                        </div>
-                                                    }
-                                                }).collect_view()}
-                                            </div>
-                                        }.into_any()
-                                    }}
+                                    <CommentList post_id=id comments=comments_signal />
+                                    {can_comment.then(|| view! {
+                                        <CommentForm post_id=id on_submit=on_comment_created />
+                                    })}
                                 </section>
 
                                 // Prev/Next navigation
@@ -214,10 +258,10 @@ pub fn PostViewPage() -> impl IntoView {
                                             view! {
                                                 <nav class="post-neighbors">
                                                     {prev_href.map(|href| view! {
-                                                        <a class="prev" href=href>"« Previous"</a>
+                                                        <a class="prev" href=href>"\u{00AB} Previous"</a>
                                                     })}
                                                     {next_href.map(|href| view! {
-                                                        <a class="next" href=href>"Next »"</a>
+                                                        <a class="next" href=href>"Next \u{00BB}"</a>
                                                     })}
                                                 </nav>
                                             }

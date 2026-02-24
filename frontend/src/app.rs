@@ -15,12 +15,24 @@ use crate::pages::login::LoginPage;
 use crate::pages::logout::LogoutPage;
 use crate::pages::not_found::NotFoundPage;
 use crate::pages::password_reset::{PasswordResetPage, PasswordResetConfirmPage};
+use crate::pages::pool_categories::PoolCategoriesPage;
+use crate::pages::pool_create::PoolCreatePage;
+use crate::pages::pool_delete::PoolDeletePage;
+use crate::pages::pool_edit::PoolEditPage;
 use crate::pages::pool_list::PoolListPage;
+use crate::pages::pool_merge::PoolMergePage;
 use crate::pages::pool_view::PoolViewPage;
+use crate::pages::post_edit::PostEditPage;
 use crate::pages::post_list::PostListPage;
+use crate::pages::post_merge::PostMergePage;
+use crate::pages::post_upload::PostUploadPage;
 use crate::pages::post_view::PostViewPage;
 use crate::pages::register::RegisterPage;
+use crate::pages::tag_categories::TagCategoriesPage;
+use crate::pages::tag_delete::TagDeletePage;
+use crate::pages::tag_edit::TagEditPage;
 use crate::pages::tag_list::TagListPage;
+use crate::pages::tag_merge::TagMergePage;
 use crate::pages::tag_view::TagViewPage;
 use crate::pages::settings::SettingsPage;
 use crate::pages::user_delete::UserDeletePage;
@@ -29,18 +41,6 @@ use crate::pages::user_list::UserListPage;
 use crate::pages::user_tokens::UserTokensPage;
 use crate::pages::user_view::UserViewPage;
 use crate::settings::SettingsState;
-
-/// Placeholder component for routes not yet implemented.
-#[component]
-fn Todo(#[prop(into)] name: String) -> impl IntoView {
-    view! {
-        <Title text=name.clone() />
-        <div class="placeholder-page">
-            <h1>{name.clone()}</h1>
-            <p>"This page is not yet implemented."</p>
-        </div>
-    }
-}
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -93,26 +93,26 @@ pub fn App() -> impl IntoView {
                     // Posts
                     <Route path=path!("/posts") view=PostListPage />
                     <Route path=path!("/post/:id") view=PostViewPage />
-                    <Route path=path!("/post/:id/edit") view=|| view! { <Todo name="Edit Post" /> } />
-                    <Route path=path!("/post/:id/merge") view=|| view! { <Todo name="Merge Post" /> } />
-                    <Route path=path!("/upload") view=|| view! { <Todo name="Upload" /> } />
+                    <Route path=path!("/post/:id/edit") view=PostEditPage />
+                    <Route path=path!("/post/:id/merge") view=PostMergePage />
+                    <Route path=path!("/upload") view=PostUploadPage />
 
                     // Tags
                     <Route path=path!("/tags") view=TagListPage />
                     <Route path=path!("/tag/:name") view=TagViewPage />
-                    <Route path=path!("/tag/:name/edit") view=|| view! { <Todo name="Edit Tag" /> } />
-                    <Route path=path!("/tag/:name/merge") view=|| view! { <Todo name="Merge Tag" /> } />
-                    <Route path=path!("/tag/:name/delete") view=|| view! { <Todo name="Delete Tag" /> } />
-                    <Route path=path!("/tag-categories") view=|| view! { <Todo name="Tag Categories" /> } />
+                    <Route path=path!("/tag/:name/edit") view=TagEditPage />
+                    <Route path=path!("/tag/:name/merge") view=TagMergePage />
+                    <Route path=path!("/tag/:name/delete") view=TagDeletePage />
+                    <Route path=path!("/tag-categories") view=TagCategoriesPage />
 
                     // Pools
                     <Route path=path!("/pools") view=PoolListPage />
-                    <Route path=path!("/pool/create") view=|| view! { <Todo name="Create Pool" /> } />
+                    <Route path=path!("/pool/create") view=PoolCreatePage />
                     <Route path=path!("/pool/:id") view=PoolViewPage />
-                    <Route path=path!("/pool/:id/edit") view=|| view! { <Todo name="Edit Pool" /> } />
-                    <Route path=path!("/pool/:id/merge") view=|| view! { <Todo name="Merge Pool" /> } />
-                    <Route path=path!("/pool/:id/delete") view=|| view! { <Todo name="Delete Pool" /> } />
-                    <Route path=path!("/pool-categories") view=|| view! { <Todo name="Pool Categories" /> } />
+                    <Route path=path!("/pool/:id/edit") view=PoolEditPage />
+                    <Route path=path!("/pool/:id/merge") view=PoolMergePage />
+                    <Route path=path!("/pool/:id/delete") view=PoolDeletePage />
+                    <Route path=path!("/pool-categories") view=PoolCategoriesPage />
 
                     // Users
                     <Route path=path!("/users") view=UserListPage />

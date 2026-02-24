@@ -101,3 +101,141 @@ async fn get_featured_post() {
         assert!(post.id.is_some(), "featured post should have an id");
     }
 }
+
+/// PUT /post/{id}/score without auth should fail.
+#[tokio::test]
+async fn score_post_unauthenticated_fails() {
+    // Get any post
+    let list_url = format!("{BACKEND_URL}/posts?query=&offset=0&limit=1&fields=id");
+    let list_resp = reqwest::get(&list_url).await.expect("backend not reachable");
+    let page: PagedResponse<PostInfo> = list_resp.json().await.unwrap();
+
+    if page.results.is_empty() {
+        eprintln!("SKIP: no posts in database");
+        return;
+    }
+
+    let post_id = page.results[0].id.unwrap();
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/post/{post_id}/score");
+    let resp = client
+        .put(&url)
+        .json(&serde_json::json!({ "score": 1 }))
+        .send()
+        .await
+        .expect("backend not reachable");
+    let status = resp.status().as_u16();
+    assert!(
+        status == 401 || status == 403,
+        "unauthenticated PUT /post/{post_id}/score should fail, got {status}"
+    );
+}
+
+/// POST /post/{id}/favorite without auth should fail.
+#[tokio::test]
+async fn favorite_post_unauthenticated_fails() {
+    let list_url = format!("{BACKEND_URL}/posts?query=&offset=0&limit=1&fields=id");
+    let list_resp = reqwest::get(&list_url).await.expect("backend not reachable");
+    let page: PagedResponse<PostInfo> = list_resp.json().await.unwrap();
+
+    if page.results.is_empty() {
+        eprintln!("SKIP: no posts in database");
+        return;
+    }
+
+    let post_id = page.results[0].id.unwrap();
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/post/{post_id}/favorite");
+    let resp = client
+        .post(&url)
+        .send()
+        .await
+        .expect("backend not reachable");
+    let status = resp.status().as_u16();
+    assert!(
+        status == 401 || status == 403,
+        "unauthenticated POST /post/{post_id}/favorite should fail, got {status}"
+    );
+}
+
+/// DELETE /post/{id} without auth should fail.
+#[tokio::test]
+async fn delete_post_unauthenticated_fails() {
+    let list_url = format!("{BACKEND_URL}/posts?query=&offset=0&limit=1&fields=id");
+    let list_resp = reqwest::get(&list_url).await.expect("backend not reachable");
+    let page: PagedResponse<PostInfo> = list_resp.json().await.unwrap();
+
+    if page.results.is_empty() {
+        eprintln!("SKIP: no posts in database");
+        return;
+    }
+
+    let post_id = page.results[0].id.unwrap();
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/post/{post_id}");
+    let resp = client
+        .delete(&url)
+        .json(&serde_json::json!({ "version": "fake" }))
+        .send()
+        .await
+        .expect("backend not reachable");
+    let status = resp.status().as_u16();
+    assert!(
+        status == 401 || status == 403,
+        "unauthenticated DELETE /post/{post_id} should fail, got {status}"
+    );
+}
+
+/// PUT /post/{id} with stale version should return conflict.
+#[tokio::test]
+async fn update_post_stale_version_returns_conflict() {
+    let list_url = format!("{BACKEND_URL}/posts?query=&offset=0&limit=1&fields=id,version");
+    let list_resp = reqwest::get(&list_url).await.expect("backend not reachable");
+    let page: PagedResponse<PostInfo> = list_resp.json().await.unwrap();
+
+    if page.results.is_empty() {
+        eprintln!("SKIP: no posts in database");
+        return;
+    }
+
+    let post_id = page.results[0].id.unwrap();
+    // Use a clearly stale version
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/post/{post_id}");
+    let resp = client
+        .put(&url)
+        .json(&serde_json::json!({
+            "version": "1970-01-01T00:00:00Z",
+            "safety": "safe"
+        }))
+        .send()
+        .await
+        .expect("backend not reachable");
+
+    let status = resp.status().as_u16();
+    // Either 401 (no auth), 403 (insufficient privilege), or 409 (version conflict)
+    assert!(
+        status == 401 || status == 403 || status == 409,
+        "PUT /post/{post_id} with stale version should fail, got {status}"
+    );
+}
+
+/// POST /posts/reverse-search with empty body should return an error.
+#[tokio::test]
+async fn reverse_search_empty_body_fails() {
+    let client = reqwest::Client::new();
+    let url = format!("{BACKEND_URL}/posts/reverse-search");
+    let resp = client
+        .post(&url)
+        .json(&serde_json::json!({}))
+        .send()
+        .await
+        .expect("backend not reachable");
+
+    // Should fail — no content provided
+    let status = resp.status().as_u16();
+    assert!(
+        status >= 400,
+        "POST /posts/reverse-search with empty body should return error, got {status}"
+    );
+}

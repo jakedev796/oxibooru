@@ -67,6 +67,21 @@ pub struct PostInfo {
     pub has_custom_thumbnail: Option<bool>,
 }
 
+/// Response from `POST /posts/reverse-search`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReverseSearchResponse {
+    pub exact_post: Option<PostInfo>,
+    pub similar_posts: Vec<SimilarPost>,
+}
+
+/// A post with its visual similarity distance.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SimilarPost {
+    pub distance: f64,
+    pub post: PostInfo,
+}
+
 /// Response from `GET /post/{id}/around` — neighboring posts for prev/next navigation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PostNeighbors {
@@ -188,5 +203,29 @@ mod tests {
         let neighbors: PostNeighbors = serde_json::from_str(json).unwrap();
         assert!(neighbors.prev.is_none());
         assert_eq!(neighbors.next.as_ref().unwrap().id, Some(2));
+    }
+
+    #[test]
+    fn deserialize_reverse_search_response() {
+        let json = r#"{
+            "exactPost": {"id": 1, "thumbnailUrl": "/thumb/1.jpg"},
+            "similarPosts": [
+                {"distance": 0.05, "post": {"id": 2, "thumbnailUrl": "/thumb/2.jpg"}},
+                {"distance": 0.15, "post": {"id": 3}}
+            ]
+        }"#;
+        let resp: ReverseSearchResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(resp.exact_post.as_ref().unwrap().id, Some(1));
+        assert_eq!(resp.similar_posts.len(), 2);
+        assert!((resp.similar_posts[0].distance - 0.05).abs() < f64::EPSILON);
+        assert_eq!(resp.similar_posts[0].post.id, Some(2));
+    }
+
+    #[test]
+    fn deserialize_reverse_search_response_no_exact() {
+        let json = r#"{"exactPost": null, "similarPosts": []}"#;
+        let resp: ReverseSearchResponse = serde_json::from_str(json).unwrap();
+        assert!(resp.exact_post.is_none());
+        assert!(resp.similar_posts.is_empty());
     }
 }
