@@ -10,6 +10,14 @@ WORKDIR /opt/app
 COPY Cargo.toml /opt/
 COPY shared/ /opt/shared/
 
+# Create stub Cargo.toml files for workspace members not needed in this build
+# so that `cargo metadata` (invoked by trunk) can resolve the full workspace
+RUN mkdir -p /opt/server/src /opt/server/macros/src \
+    && printf '[package]\nname = "oxibooru_server"\nversion = "0.0.0"\nedition = "2024"\n' > /opt/server/Cargo.toml \
+    && touch /opt/server/src/lib.rs \
+    && printf '[package]\nname = "server-macros"\nversion = "0.0.0"\nedition = "2024"\n' > /opt/server/macros/Cargo.toml \
+    && touch /opt/server/macros/src/lib.rs
+
 # Copy the frontend crate
 COPY frontend/ /opt/app/
 
