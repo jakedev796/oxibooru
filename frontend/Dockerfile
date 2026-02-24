@@ -4,7 +4,7 @@ FROM rust:1-bookworm AS builder
 RUN cargo install trunk \
     && rustup target add wasm32-unknown-unknown
 
-WORKDIR /opt/app
+WORKDIR /opt/frontend
 
 # Copy workspace-level files needed for the build
 COPY Cargo.toml /opt/
@@ -19,7 +19,7 @@ RUN mkdir -p /opt/server/src /opt/server/macros/src \
     && touch /opt/server/macros/src/lib.rs
 
 # Copy the frontend crate
-COPY frontend/ /opt/app/
+COPY frontend/ /opt/frontend/
 
 # Build the frontend (trunk build outputs to dist/)
 RUN trunk build --release
@@ -33,7 +33,7 @@ RUN apk --no-cache add dumb-init
 COPY frontend/nginx.conf.docker /etc/nginx/nginx.conf
 
 # Copy built static files
-COPY --from=builder /opt/app/dist/ /var/www/
+COPY --from=builder /opt/frontend/dist/ /var/www/
 
 # Copy startup script
 COPY frontend/docker-start.sh /docker-start.sh

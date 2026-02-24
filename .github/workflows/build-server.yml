@@ -54,11 +54,11 @@ jobs:
         with:
           context: ./server
           platforms: ${{ matrix.platform }}
+          # TODO: Revert to oxibooru/server for production
           build-args: |
             BUILD_INFO=${{ env.build_info }}
             BUILD_DATE=${{ env.build_date }}
             SOURCE_COMMIT=${{ github.sha }}
-            # TODO: Revert to oxibooru/server for production
             DOCKER_REPO=boker02/server
           outputs: type=image,name=boker02/server,push-by-digest=true,name-canonical=true,push=true
 
@@ -114,8 +114,8 @@ jobs:
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
+          # TODO: Revert to oxibooru/server for production
           docker buildx imagetools create \
-            # TODO: Revert to oxibooru/server for production
             -t boker02/server:latest \
             -t boker02/server:${{ env.major_tag }} \
             -t boker02/server:${{ env.minor_tag }} \
