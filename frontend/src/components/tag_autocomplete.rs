@@ -9,8 +9,9 @@ use crate::api::ApiClient;
 use crate::settings::SettingsState;
 
 /// Debounced tag search dropdown with keyboard navigation.
+/// `on_select` receives `(name, category)` for each selected tag.
 #[component]
-pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] placeholder: String) -> impl IntoView {
+pub fn TagAutocomplete(on_select: Callback<(String, String)>, #[prop(optional, into)] placeholder: String) -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let settings = expect_context::<SettingsState>();
     let (query, set_query) = signal(String::new());
@@ -56,7 +57,8 @@ pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] plac
 
     let select_item = move |tag: &TagInfo| {
         if let Some(name) = tag.names.as_ref().and_then(|n| n.first()) {
-            on_select.run(name.clone());
+            let category = tag.category.clone().unwrap_or_default();
+            on_select.run((name.clone(), category));
             set_query.set(String::new());
             set_results.set(vec![]);
             set_show_dropdown.set(false);
@@ -138,6 +140,7 @@ pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] plac
                         let usages = tag.usages.unwrap_or(0);
                         let is_selected = move || selected_index.get() == Some(i);
                         let name_click = name.clone();
+                        let cat_click = category.clone();
                         let display = settings.display_name(&name);
                         let class = format!("autocomplete-item tag-category-{category}");
                         view! {
@@ -145,7 +148,7 @@ pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] plac
                                 class=class
                                 class:selected=is_selected
                                 on:mousedown=move |_| {
-                                    on_select.run(name_click.clone());
+                                    on_select.run((name_click.clone(), cat_click.clone()));
                                     set_query.set(String::new());
                                     set_results.set(vec![]);
                                     set_show_dropdown.set(false);

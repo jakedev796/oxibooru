@@ -2594,90 +2594,53 @@ button.discourage {
    File Dropper
    ======================================== */
 .file-dropper {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1em;
 }
 
-.file-dropper label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    font-size: 0.9rem;
-}
-
-.drop-zone {
+.drop-area {
     border: 3px dashed var(--input-border);
-    padding: 0.3em 0.5em;
+    padding: 2.5em 1em;
     text-align: center;
     cursor: pointer;
     color: var(--text-dim);
-    line-height: 140%;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background 0.2s;
 }
 
-.drop-zone:hover,
-.drop-zone:focus {
+.drop-area:hover {
     border-color: var(--primary);
 }
 
-.drop-zone.drag-over {
+.file-dropper.dragging .drop-area {
     border-color: var(--primary);
-    background: var(--drop-zone-active-bg);
+    background: rgba(0, 180, 255, 0.05);
 }
 
-.drop-zone .drop-instructions {
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
+.drop-text .drop-label {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
 }
 
-.drop-zone .drop-hint {
-    font-size: 0.75rem;
-    color: var(--text-dimmest);
+.drop-text .drop-sublabel {
+    margin: 0.5em 0 0 0;
+    font-size: 0.85em;
+    color: var(--text-muted);
 }
 
-.file-preview {
-    margin-top: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    background: var(--bg-code);
-    font-size: 0.85rem;
+.drop-area .file-name {
+    font-size: 1em;
+    color: var(--text);
+}
+
+.url-input-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 0;
+    margin-top: 0.75em;
 }
 
-.file-preview button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--danger);
-    font-size: 0.8rem;
-}
-
-.url-input-toggle {
-    margin-top: 0.4rem;
-}
-
-.url-input-toggle button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--link);
-    font-size: 0.8rem;
-    padding: 0;
-}
-
-.url-input-toggle button:hover {
-    text-decoration: underline;
-}
-
-.url-input-area {
-    margin-top: 0.4rem;
-    display: flex;
-    gap: 0.3rem;
-}
-
-.url-input-area input {
+.url-input-row input {
     flex: 1;
-    padding: 0.2em 0.3em;
+    padding: 0.4em 0.6em;
     border: 2px solid var(--input-border);
     border-radius: 0;
     font-size: 100%;
@@ -2686,18 +2649,212 @@ button.discourage {
     outline: none;
 }
 
-.url-input-area input:focus {
+.url-input-row input:focus {
     border-color: var(--primary) !important;
 }
 
-.url-input-area button {
-    padding: 0.2em 0.7em;
+.url-add-btn {
+    padding: 0.4em 1em;
     background: var(--primary);
     color: #fff;
     border: 2px solid var(--primary);
     border-radius: 0;
     cursor: pointer;
     font-size: 100%;
+    white-space: nowrap;
+}
+
+.url-add-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* ========================================
+   Upload Page
+   ======================================== */
+#post-upload {
+    max-width: 65em;
+    margin: 0 auto;
+    padding: 1em 1.5em 2em;
+}
+
+#post-upload .control-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75em;
+    margin: 1em 0;
+}
+
+#post-upload .control-strip .btn-primary {
+    padding: 0.4em 1.5em;
+    background: var(--primary);
+    color: #fff;
+    border: 2px solid var(--primary);
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 100%;
+    font-weight: 600;
+}
+
+#post-upload .control-strip .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+#post-upload ul.input.inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2em 1.5em;
+}
+
+#post-upload ul.input.inline li {
+    margin: 0;
+}
+
+#post-upload .messages {
+    margin: 0.5em 0;
+}
+
+#post-upload .shared-settings {
+    margin-bottom: 1em;
+}
+
+#post-upload .single-settings {
+    margin-bottom: 1em;
+}
+
+/* Safety radio buttons */
+.safety-radios {
+    display: flex;
+    gap: 1em;
+}
+
+.safety-radios label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+    cursor: pointer;
+    font-weight: normal !important;
+    padding: 0 !important;
+}
+
+.safety-radios input[type="radio"] {
+    width: auto !important;
+}
+
+/* Uploadable items list */
+.uploadables-container {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.uploadable-container {
+    display: flex;
+    gap: 1em;
+    padding: 0.75em 0;
+    border-bottom: 1px solid var(--border-lighter);
+}
+
+.uploadable-container:last-child {
+    border-bottom: none;
+}
+
+.uploadable-container .thumbnail-wrapper {
+    flex-shrink: 0;
+    width: 12em;
+    height: 8em;
+    overflow: hidden;
+    background: var(--bg-code);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.uploadable-container .thumbnail-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.uploadable-container .uploadable {
+    flex: 1;
+    min-width: 0;
+}
+
+.uploadable-container header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4em;
+}
+
+.uploadable-container .filename {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.uploadable-container header nav {
+    display: flex;
+    gap: 0.2em;
+    flex-shrink: 0;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.2em 0.4em;
+    font-size: 0.9em;
+}
+
+.btn-icon:hover {
+    color: var(--text);
+}
+
+.btn-icon.remove:hover {
+    color: var(--danger);
+}
+
+.uploadable-container .body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em 1.5em;
+}
+
+.uploadable-container .body ul.input {
+    margin: 0;
+}
+
+.uploadable-container .per-file-tags {
+    width: 100%;
+    margin-top: 0.3em;
+}
+
+.uploadable-container .status-msg {
+    font-size: 0.85em;
+    margin-top: 0.3em;
+    color: var(--text-muted);
+}
+
+.uploadable-container.done .status-msg {
+    color: var(--success-text);
+}
+
+.uploadable-container.error .status-msg {
+    color: var(--danger);
+}
+
+.uploadable-container.skipped {
+    opacity: 0.5;
+}
+
+.uploadable-container.uploading {
+    opacity: 0.7;
 }
 
 /* ========================================

@@ -62,7 +62,7 @@ pub fn TagMergePage() -> impl IntoView {
     });
 
     // When a tag is selected via autocomplete, load its version from the API
-    let on_tag_select = Callback::new(move |name: String| {
+    let on_tag_select = Callback::new(move |(name, _category): (String, String)| {
         set_target_name.set(name.clone());
         let client = api.get_untracked();
         leptos::task::spawn_local(async move {

@@ -125,6 +125,11 @@ impl ApiClient {
         self.post_multipart("/posts", form_data).await
     }
 
+    /// POST /posts (JSON body — when content is already uploaded via token or URL).
+    pub async fn create_post_json(&self, body: &CreatePostBody) -> Result<PostInfo, ApiError> {
+        self.post("/posts", body).await
+    }
+
     /// PUT /post/{id} (JSON body — metadata-only update).
     pub async fn update_post_json(&self, id: i64, body: &UpdatePostBody) -> Result<PostInfo, ApiError> {
         self.put(&format!("/post/{id}"), body).await

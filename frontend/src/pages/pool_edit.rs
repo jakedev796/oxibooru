@@ -15,7 +15,7 @@ pub fn PoolEditPage() -> impl IntoView {
 
     let (loading, set_loading) = signal(true);
     let (load_error, set_load_error) = signal(false);
-    let categories = RwSignal::new(Vec::<PoolCategoryInfo>::new());
+    let categories = expect_context::<RwSignal<Vec<PoolCategoryInfo>>>();
 
     // Form signals
     let (names_str, set_names_str) = signal(String::new());
@@ -28,14 +28,11 @@ pub fn PoolEditPage() -> impl IntoView {
     let (error_msg, set_error_msg) = signal(Option::<String>::None);
     let (success_msg, set_success_msg) = signal(Option::<String>::None);
 
-    // Load pool + categories
+    // Load pool data
     Effect::new(move || {
         let client = api.get_untracked();
         let id = pool_id();
         leptos::task::spawn_local(async move {
-            if let Ok(resp) = client.get_pool_categories().await {
-                categories.set(resp.results);
-            }
             match client.get_pool(id).await {
                 Ok(pool) => {
                     set_names_str.set(pool.names.unwrap_or_default().join(", "));

@@ -12,8 +12,7 @@ pub fn PoolCreatePage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let navigate = use_navigate();
 
-    let (loading, set_loading) = signal(true);
-    let categories = RwSignal::new(Vec::<PoolCategoryInfo>::new());
+    let categories = expect_context::<RwSignal<Vec<PoolCategoryInfo>>>();
 
     // Form signals
     let (names_str, set_names_str) = signal(String::new());
@@ -23,17 +22,6 @@ pub fn PoolCreatePage() -> impl IntoView {
 
     let (submitting, set_submitting) = signal(false);
     let (error_msg, set_error_msg) = signal(Option::<String>::None);
-
-    // Load categories
-    Effect::new(move || {
-        let client = api.get_untracked();
-        leptos::task::spawn_local(async move {
-            if let Ok(resp) = client.get_pool_categories().await {
-                categories.set(resp.results);
-            }
-            set_loading.set(false);
-        });
-    });
 
     let on_submit = move |ev: ev::SubmitEvent| {
         ev.prevent_default();
@@ -102,7 +90,7 @@ pub fn PoolCreatePage() -> impl IntoView {
             <form
                 class="form-grid"
                 on:submit=on_submit
-                style:display=move || if loading.get() { "none" } else { "" }
+                style:display=""
             >
                 {move || error_msg.get().map(|msg| view! { <p class="error">{msg}</p> })}
 
