@@ -1441,6 +1441,12 @@ nav.buttons ul li.ellipsis {
     color: var(--link);
 }
 
+/* Score widget in post sidebar: override .detail-row i.fa so grid layout and alignment are not broken */
+.detail-row .score-widget i.fa {
+    margin-right: 0;
+    display: block;
+}
+
 /* Safety icon colors */
 .detail-row i.safety-safe { color: var(--safety-safe); }
 .detail-row i.safety-sketchy { color: var(--safety-sketchy); }
@@ -1480,6 +1486,16 @@ nav.buttons ul li.ellipsis {
     display: flex;
     align-items: center;
     gap: 3em;
+}
+
+/* Force score widget to use its grid layout and vertical alignment in post view */
+.social-row .score-widget {
+    display: inline-grid;
+    grid-template-columns: 1.5em 2em 1.5em;
+    align-items: center;
+    justify-items: center;
+    gap: 0.25em;
+    height: 1.5em;
 }
 
 /* Sidebar sections (relations, tags, pools) */
@@ -2305,9 +2321,24 @@ button.discourage {
    Score Widget
    ======================================== */
 .score-widget {
-    display: inline-flex;
+    display: inline-grid;
+    grid-template-columns: 1.5em 2em 1.5em;
     align-items: center;
-    gap: 0.2em;
+    justify-items: center;
+    gap: 0.25em;
+    height: 1.5em;
+}
+
+.score-widget__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.score-widget__value {
+    grid-column: 2;
 }
 
 .score-widget button {
@@ -2321,6 +2352,11 @@ button.discourage {
     outline: none;
     box-shadow: none;
     -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .score-widget button:hover {
@@ -2335,9 +2371,8 @@ button.discourage {
     border: none;
 }
 
-/* Fixed-width icons for centering */
 .score-widget button i.fa {
-    display: inline-block;
+    display: block;
     width: 1em;
     text-align: center;
 }
@@ -2352,9 +2387,8 @@ button.discourage {
 
 .score-widget .score-value {
     font-size: 1em;
-    min-width: 2em;
+    line-height: 1;
     text-align: center;
-    display: inline-block;
 }
 
 /* ========================================
