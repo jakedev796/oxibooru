@@ -1101,21 +1101,104 @@ nav.buttons ul li.ellipsis {
 }
 
 .tag-relations {
-    color: var(--text-dim);
     font-size: 0.85rem;
+}
+
+.tag-relation-empty {
+    color: var(--text-dim);
+}
+
+.tag-relation-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tag-relation-list li {
+    display: inline;
+}
+
+.tag-relation-list li:not(:last-child)::after {
+    content: ", ";
+    color: var(--text-dim);
+}
+
+/* Tag name + category columns: links inherit category color */
+.tag-list td.tag-name-cell a,
+.tag-list td.tag-name-cell[class*="tag-category-"] a {
+    color: inherit;
+}
+
+.tag-list .tag-relation-list li[class*="tag-category-"] a {
+    color: inherit;
+}
+
+.tag-list .tag-usages-cell,
+.tag-list .tag-created-cell {
+    color: var(--text);
+}
+
+.tag-list .tag-usages-cell a {
+    color: var(--link);
+}
+
+/* Tag name: max width with ellipsis so long names don't stretch the table */
+.tag-list .tag-name-cell {
+    max-width: 18em;
+}
+
+.tag-list .tag-name-cell a {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tag-list th.sortable a {
+    color: var(--link);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.tag-list th.sortable a:hover {
+    text-decoration: underline;
+}
+
+/* Tag list page: header row with search + links + spacing */
+.tag-list-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75em 1em;
+    margin-bottom: 1em;
+}
+
+.tag-list-header .search-bar {
+    gap: 0.5em;
+}
+
+.tag-list-header .search-append {
+    color: var(--link);
+    text-decoration: none;
+}
+
+.tag-list-header .search-append:hover {
+    text-decoration: underline;
 }
 
 /* Column widths for tag list */
 .tag-list td:nth-child(1),
-.tag-list th:nth-child(1) { width: 28%; }
+.tag-list th:nth-child(1) { width: 22%; }
+.tag-list td:nth-child(2),
+.tag-list th:nth-child(2) { width: 10%; }
+.tag-list td:nth-child(3),
+.tag-list th:nth-child(3) { width: 8%; }
 .tag-list td:nth-child(4),
 .tag-list th:nth-child(4),
 .tag-list td:nth-child(5),
-.tag-list th:nth-child(5) { width: 28%; }
-.tag-list td:nth-child(3),
-.tag-list th:nth-child(3) { width: 8%; }
+.tag-list th:nth-child(5) { width: 18%; }
 .tag-list td:nth-child(6),
-.tag-list th:nth-child(6) { width: 8%; }
+.tag-list th:nth-child(6) { width: 14%; white-space: nowrap; }
 
 /* Operation badges in history */
 .operation-created { color: #2a7ae2; }
@@ -3403,20 +3486,17 @@ button.discourage {
         height: 33vw;
     }
 
-    /* Tables: responsive stacking */
-    .tag-list,
+    /* Tables: responsive stacking (pool-list and history-list only) */
     .pool-list,
     .history-list {
         display: block;
     }
 
-    .tag-list thead,
     .pool-list thead,
     .history-list thead {
         display: none;
     }
 
-    .tag-list tr,
     .pool-list tr,
     .history-list tr {
         display: block;
@@ -3424,7 +3504,6 @@ button.discourage {
         border-bottom: 1px solid var(--border-lighter);
     }
 
-    .tag-list td,
     .pool-list td,
     .history-list td {
         display: block;
@@ -3432,7 +3511,14 @@ button.discourage {
         border: none;
     }
 
-    /* Hide implications/suggestions columns on small screens */
+    /* Tag list: keep as table on mobile; hide implications/suggestions and size down */
+    .tag-list-page .tag-list {
+        font-size: 0.9em;
+        width: 100%;
+    }
+
+    .tag-list th:nth-child(4),
+    .tag-list th:nth-child(5),
     .tag-list td:nth-child(4),
     .tag-list td:nth-child(5) {
         display: none;
