@@ -23,6 +23,36 @@ use crate::utils::{build_list_url, setup_scroll_listener, use_list_query_params}
 
 const FIELDS: &str = "id,thumbnailUrl,type,safety,score,favoriteCount,commentCount,tags,version";
 
+/// Build a safety filter token from the current settings.
+/// Returns e.g. "safety:safe,sketchy" or empty string if all are enabled.
+fn build_safety_filter(safe: bool, sketchy: bool, unsafe_: bool) -> String {
+    if (safe && sketchy && unsafe_) || (!safe && !sketchy && !unsafe_) {
+        return String::new();
+    }
+    let mut levels = Vec::new();
+    if safe {
+        levels.push("safe");
+    }
+    if sketchy {
+        levels.push("sketchy");
+    }
+    if unsafe_ {
+        levels.push("unsafe");
+    }
+    format!("safety:{}", levels.join(","))
+}
+
+/// Prepend safety filter to user query if needed.
+fn apply_safety_filter(user_query: &str, safety_filter: &str) -> String {
+    if safety_filter.is_empty() {
+        user_query.to_string()
+    } else if user_query.is_empty() {
+        safety_filter.to_string()
+    } else {
+        format!("{safety_filter} {user_query}")
+    }
+}
+
 #[component]
 pub fn PostListPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
@@ -33,13 +63,28 @@ pub fn PostListPage() -> impl IntoView {
     let params = use_list_query_params(default_limit);
     let navigate = use_navigate();
     let endless = settings.inner.get_untracked().endless_scroll;
+    let post_flow = settings.inner.get_untracked().post_flow;
+
+    // Safety filter
+    let safety_filter = Signal::derive(move || {
+        settings.inner.with(|s| {
+            build_safety_filter(s.list_posts_safe, s.list_posts_sketchy, s.list_posts_unsafe)
+        })
+    });
+
+    // Combined query: user query + safety filter
+    let full_query = Signal::derive(move || {
+        let p = params.get();
+        apply_safety_filter(&p.query, &safety_filter.get())
+    });
 
     let posts = LocalResource::new(move || {
         let client = api.get();
         let p = params.get();
+        let query = apply_safety_filter(&p.query, &safety_filter.get());
         async move {
             loading.start();
-            let result = client.get_posts(&p.query, p.offset, p.limit, FIELDS).await;
+            let result = client.get_posts(&query, p.offset, p.limit, FIELDS).await;
             loading.finish();
             result
         }
@@ -68,14 +113,6 @@ pub fn PostListPage() -> impl IntoView {
     let (show_safety_dialog, set_show_safety_dialog) = signal(false);
     let (bulk_safety, set_bulk_safety) = signal("safe".to_string());
 
-    let toggle_select_mode = move |_| {
-        let new_val = !selecting.get_untracked();
-        selecting.set(new_val);
-        if !new_val {
-            selected.set(HashSet::new());
-        }
-    };
-
     let toggle_post = Callback::new(move |id: i64| {
         selected.update(|set| {
             if set.contains(&id) {
@@ -86,13 +123,12 @@ pub fn PostListPage() -> impl IntoView {
         });
     });
 
-    let select_all = move |_| {
-        let all_ids: HashSet<i64> = post_data.get_untracked().iter().filter_map(|p| p.id).collect();
-        selected.set(all_ids);
-    };
-
-    let deselect_all = move |_| {
+    let cancel_bulk = move || {
+        selecting.set(false);
         selected.set(HashSet::new());
+        set_show_tag_dialog.set(false);
+        set_show_safety_dialog.set(false);
+        set_bulk_error.set(None);
     };
 
     // Bulk add tags
@@ -232,7 +268,7 @@ pub fn PostListPage() -> impl IntoView {
     };
 
     // Endless scroll state
-    let accumulated = RwSignal::new(Vec::<PostInfo>::new());
+    let accumulated_pages = RwSignal::new(Vec::<Vec<PostInfo>>::new());
     let loaded_up_to = RwSignal::new(0i64);
     let total_results = RwSignal::new(0i64);
     let loading_more = RwSignal::new(false);
@@ -244,14 +280,14 @@ pub fn PostListPage() -> impl IntoView {
         }
         loading_more.set(true);
         let client = api.get_untracked();
-        let query = params.get_untracked().query.clone();
+        let query = full_query.get_untracked();
         let offset = loaded_up_to.get_untracked();
         let limit = params.get_untracked().limit;
 
         leptos::task::spawn_local(async move {
             if let Ok(data) = client.get_posts(&query, offset, limit, FIELDS).await {
                 let new_count = data.results.len() as i64;
-                accumulated.update(|v| v.extend(data.results.clone()));
+                accumulated_pages.update(|v| v.push(data.results.clone()));
                 post_data.update(|v| v.extend(data.results));
                 loaded_up_to.set(offset + new_count);
                 total_results.set(data.total);
@@ -284,41 +320,135 @@ pub fn PostListPage() -> impl IntoView {
     });
 
     // Check bulk privileges
-    let can_bulk_tag = auth.has_privilege("post_bulk_edit_tag");
-    let can_bulk_safety = auth.has_privilege("post_bulk_edit_safety");
-    let can_bulk_delete = auth.has_privilege("post_bulk_edit_delete");
-    let can_bulk = can_bulk_tag || can_bulk_safety || can_bulk_delete;
+    let can_bulk_tag = Signal::derive(move || auth.has_privilege("post_bulk_edit_tag"));
+    let can_bulk_safety = Signal::derive(move || auth.has_privilege("post_bulk_edit_safety"));
+    let can_bulk_delete = Signal::derive(move || auth.has_privilege("post_bulk_edit_delete"));
 
     view! {
         <Title text="Posts" />
         <div class="post-list-page">
-            <SearchBar query=query_signal on_submit=on_search />
-
-            // Bulk select toolbar
-            {can_bulk.then(|| view! {
-                <div class="bulk-toolbar">
-                    <button type="button" class="btn-select" on:click=toggle_select_mode>
-                        {move || if selecting.get() { "Cancel selection" } else { "Select" }}
-                    </button>
-                    {move || selecting.get().then(|| {
-                        let count = selected.get().len();
+            <div class="post-search-header">
+                <SearchBar query=query_signal on_submit=on_search tag_autocomplete=true />
+                <input
+                    type="button"
+                    class="safety-btn safety-safe"
+                    class:active=move || settings.inner.with(|s| s.list_posts_safe)
+                    on:click=move |_| settings.update(|s| s.list_posts_safe = !s.list_posts_safe)
+                />
+                <input
+                    type="button"
+                    class="safety-btn safety-sketchy"
+                    class:active=move || settings.inner.with(|s| s.list_posts_sketchy)
+                    on:click=move |_| settings.update(|s| s.list_posts_sketchy = !s.list_posts_sketchy)
+                />
+                <input
+                    type="button"
+                    class="safety-btn safety-unsafe"
+                    class:active=move || settings.inner.with(|s| s.list_posts_unsafe)
+                    on:click=move |_| settings.update(|s| s.list_posts_unsafe = !s.list_posts_unsafe)
+                />
+                <a class="search-append" href="/help/search">"Syntax help"</a>
+                <span class="post-actions-toolbar">
+                    {move || can_bulk_tag.get().then(|| {
+                        let cancel = cancel_bulk;
                         view! {
-                            <span class="bulk-count">{count}" selected"</span>
-                            <button type="button" on:click=select_all>"All"</button>
-                            <button type="button" on:click=deselect_all>"None"</button>
-                            {can_bulk_tag.then(|| view! {
-                                <button type="button"
+                            <a href="javascript:void(0)" on:click=move |_| {
+                                if selecting.get_untracked() && show_tag_dialog.get_untracked() {
+                                    cancel();
+                                } else {
+                                    selecting.set(true);
+                                    set_show_tag_dialog.set(true);
+                                    set_show_safety_dialog.set(false);
+                                }
+                            }>"Mass tag"</a>
+                        }
+                    })}
+                    {move || can_bulk_safety.get().then(|| {
+                        let cancel = cancel_bulk;
+                        view! {
+                            <a href="javascript:void(0)" on:click=move |_| {
+                                if selecting.get_untracked() && show_safety_dialog.get_untracked() {
+                                    cancel();
+                                } else {
+                                    selecting.set(true);
+                                    set_show_safety_dialog.set(true);
+                                    set_show_tag_dialog.set(false);
+                                }
+                            }>"Mass edit safety"</a>
+                        }
+                    })}
+                    {move || can_bulk_delete.get().then(|| {
+                        let cancel = cancel_bulk;
+                        view! {
+                            <a href="javascript:void(0)" on:click=move |_| {
+                                if selecting.get_untracked() && !show_tag_dialog.get_untracked() && !show_safety_dialog.get_untracked() {
+                                    cancel();
+                                } else {
+                                    selecting.set(true);
+                                    set_show_tag_dialog.set(false);
+                                    set_show_safety_dialog.set(false);
+                                }
+                            }>"Mass delete"</a>
+                        }
+                    })}
+                </span>
+            </div>
+
+            // Bulk selection info bar
+            {move || selecting.get().then(|| {
+                let count = selected.get().len();
+                let in_delete_mode = !show_tag_dialog.get() && !show_safety_dialog.get();
+                view! {
+                    <div class="bulk-info-bar">
+                        <span class="bulk-count">{count}" selected"</span>
+                    </div>
+
+                    // Tag dialog
+                    {show_tag_dialog.get().then(|| view! {
+                        <div class="bulk-dialog">
+                            <input
+                                type="text"
+                                placeholder="Tags to add (comma-separated)..."
+                                prop:value=move || bulk_tags_str.get()
+                                on:input=move |ev| set_bulk_tags_str.set(event_target_value(&ev))
+                                disabled=move || bulk_working.get()
+                            />
+                            <div class="bulk-dialog-actions">
+                                <button type="button" on:click=do_bulk_tag
                                     disabled=move || selected.get().is_empty() || bulk_working.get()
-                                    on:click=move |_| set_show_tag_dialog.set(true)
-                                >"Tag"</button>
-                            })}
-                            {can_bulk_safety.then(|| view! {
-                                <button type="button"
+                                >
+                                    {move || if bulk_working.get() { "Applying..." } else { "Apply" }}
+                                </button>
+                            </div>
+                        </div>
+                    })}
+
+                    // Safety dialog
+                    {show_safety_dialog.get().then(|| view! {
+                        <div class="bulk-dialog">
+                            <select
+                                prop:value=move || bulk_safety.get()
+                                on:change=move |ev| set_bulk_safety.set(event_target_value(&ev))
+                                disabled=move || bulk_working.get()
+                            >
+                                <option value="safe">"Safe"</option>
+                                <option value="sketchy">"Sketchy"</option>
+                                <option value="unsafe">"Unsafe"</option>
+                            </select>
+                            <div class="bulk-dialog-actions">
+                                <button type="button" on:click=do_bulk_safety
                                     disabled=move || selected.get().is_empty() || bulk_working.get()
-                                    on:click=move |_| set_show_safety_dialog.set(true)
-                                >"Safety"</button>
-                            })}
-                            {can_bulk_delete.then(|| view! {
+                                >
+                                    {move || if bulk_working.get() { "Applying..." } else { "Apply" }}
+                                </button>
+                            </div>
+                        </div>
+                    })}
+
+                    // Delete mode: apply/confirm button
+                    {in_delete_mode.then(|| view! {
+                        <div class="bulk-dialog">
+                            <div class="bulk-dialog-actions">
                                 <button type="button" class="btn-danger"
                                     disabled=move || selected.get().is_empty() || bulk_working.get()
                                     on:click=move |_| {
@@ -328,53 +458,13 @@ pub fn PostListPage() -> impl IntoView {
                                             do_bulk_delete(());
                                         }
                                     }
-                                >"Delete"</button>
-                            })}
-                        }
+                                >
+                                    {move || if bulk_working.get() { "Deleting..." } else { "Delete selected" }}
+                                </button>
+                            </div>
+                        </div>
                     })}
-                </div>
-            })}
-
-            // Bulk tag dialog
-            {move || show_tag_dialog.get().then(|| view! {
-                <div class="bulk-dialog">
-                    <h3>"Add tags to selected posts"</h3>
-                    <input
-                        type="text"
-                        placeholder="tag1, tag2, ..."
-                        prop:value=move || bulk_tags_str.get()
-                        on:input=move |ev| set_bulk_tags_str.set(event_target_value(&ev))
-                        disabled=move || bulk_working.get()
-                    />
-                    <div class="bulk-dialog-actions">
-                        <button type="button" on:click=do_bulk_tag disabled=move || bulk_working.get()>
-                            {move || if bulk_working.get() { "Applying..." } else { "Apply" }}
-                        </button>
-                        <button type="button" on:click=move |_| set_show_tag_dialog.set(false)>"Cancel"</button>
-                    </div>
-                </div>
-            })}
-
-            // Bulk safety dialog
-            {move || show_safety_dialog.get().then(|| view! {
-                <div class="bulk-dialog">
-                    <h3>"Change safety of selected posts"</h3>
-                    <select
-                        prop:value=move || bulk_safety.get()
-                        on:change=move |ev| set_bulk_safety.set(event_target_value(&ev))
-                        disabled=move || bulk_working.get()
-                    >
-                        <option value="safe">"Safe"</option>
-                        <option value="sketchy">"Sketchy"</option>
-                        <option value="unsafe">"Unsafe"</option>
-                    </select>
-                    <div class="bulk-dialog-actions">
-                        <button type="button" on:click=do_bulk_safety disabled=move || bulk_working.get()>
-                            {move || if bulk_working.get() { "Applying..." } else { "Apply" }}
-                        </button>
-                        <button type="button" on:click=move |_| set_show_safety_dialog.set(false)>"Cancel"</button>
-                    </div>
-                </div>
+                }
             })}
 
             // Bulk error
@@ -385,63 +475,67 @@ pub fn PostListPage() -> impl IntoView {
                     match posts.await {
                         Ok(data) => {
                             if endless {
-                                // Reset accumulated state from initial/new page
-                                accumulated.set(data.results.clone());
+                                // Reset accumulated pages from initial fetch
+                                accumulated_pages.set(vec![data.results.clone()]);
                                 post_data.set(data.results.clone());
                                 loaded_up_to.set(data.offset + data.results.len() as i64);
                                 total_results.set(data.total);
 
                                 view! {
-                                    <div class="post-grid">
-                                        <For
-                                            each=move || accumulated.get()
-                                            key=|post| post.id.unwrap_or(0)
-                                            children=move |post| {
-                                                let id = post.id.unwrap_or(0);
-                                                let thumbnail_url = post.thumbnail_url.clone().unwrap_or_default();
-                                                let safety = post.safety.unwrap_or(PostSafety::Safe);
-                                                let post_type = post.type_.unwrap_or(oxibooru_shared::enums::PostType::Image);
-                                                let score = post.score;
-                                                let favorite_count = post.favorite_count;
-                                                let comment_count = post.comment_count;
-                                                let is_selecting = selecting;
-                                                let is_selected = Signal::derive(move || selected.get().contains(&id));
-                                                let on_toggle = toggle_post;
+                                    <div class="pager">
+                                        {move || {
+                                            let pages = accumulated_pages.get();
+                                            let total = total_results.get();
+                                            let per_page = default_limit.max(1);
+                                            let total_pages = (total + per_page - 1) / per_page;
+
+                                            pages.into_iter().enumerate().map(|(page_idx, page_posts)| {
+                                                let page_num = (page_idx + 1) as i64;
                                                 view! {
-                                                    <div
-                                                        class="post-thumbnail-wrapper"
-                                                        class:selected=is_selected
-                                                        on:click=move |_| {
-                                                            if is_selecting.get_untracked() {
-                                                                on_toggle.run(id);
-                                                            }
-                                                        }
-                                                    >
-                                                        {move || is_selecting.get().then(|| view! {
-                                                            <div class="select-overlay">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    prop:checked=is_selected
-                                                                    on:click=move |ev| {
-                                                                        ev.stop_propagation();
-                                                                        on_toggle.run(id);
+                                                    <p class="page-header">
+                                                        <span>{format!("Page {page_num} of {total_pages}")}</span>
+                                                    </p>
+                                                    <div class="post-grid" class:post-flow=post_flow>
+                                                        {page_posts.into_iter().map(|post| {
+                                                            let id = post.id.unwrap_or(0);
+                                                            let thumbnail_url = post.thumbnail_url.clone().unwrap_or_default();
+                                                            let safety = post.safety.unwrap_or(PostSafety::Safe);
+                                                            let post_type = post.type_.unwrap_or(oxibooru_shared::enums::PostType::Image);
+                                                            let score = post.score;
+                                                            let favorite_count = post.favorite_count;
+                                                            let comment_count = post.comment_count;
+                                                            let is_selecting = selecting;
+                                                            let is_selected = Signal::derive(move || selected.get().contains(&id));
+                                                            let on_toggle = toggle_post;
+                                                            view! {
+                                                                <div
+                                                                    class="post-thumbnail-wrapper"
+                                                                    class:selecting=move || is_selecting.get()
+                                                                    class:selected=is_selected
+                                                                    on:click=move |_| {
+                                                                        if is_selecting.get_untracked() {
+                                                                            on_toggle.run(id);
+                                                                        }
                                                                     }
-                                                                />
-                                                            </div>
-                                                        })}
-                                                        <PostThumbnail
-                                                            id=id
-                                                            thumbnail_url=thumbnail_url
-                                                            safety=safety
-                                                            post_type=post_type
-                                                            score=score
-                                                            favorite_count=favorite_count
-                                                            comment_count=comment_count
-                                                        />
+                                                                >
+                                                                    <PostThumbnail
+                                                                        id=id
+                                                                        thumbnail_url=thumbnail_url
+                                                                        safety=safety
+                                                                        post_type=post_type
+                                                                        score=score
+                                                                        favorite_count=favorite_count
+                                                                        comment_count=comment_count
+                                                                    />
+                                                                </div>
+                                                            }
+                                                        }).collect_view()}
+                                                        // Flexbox dummies to prevent last row from stretching
+                                                        {(0..20).map(|_| view! { <div class="flexbox-dummy" /> }).collect_view()}
                                                     </div>
                                                 }
-                                            }
-                                        />
+                                            }).collect_view()
+                                        }}
                                     </div>
                                     <div class="scroll-sentinel">
                                         {move || loading_more.get().then(|| view! {
@@ -464,7 +558,7 @@ pub fn PostListPage() -> impl IntoView {
                                 let limit = data.limit;
                                 let query_for_page = params.get().query.clone();
                                 view! {
-                                    <div class="post-grid">
+                                    <div class="post-grid" class:post-flow=post_flow>
                                         {data.results.into_iter().map(|post| {
                                             let id = post.id.unwrap_or(0);
                                             let thumbnail_url = post.thumbnail_url.clone().unwrap_or_default();
@@ -479,6 +573,7 @@ pub fn PostListPage() -> impl IntoView {
                                             view! {
                                                 <div
                                                     class="post-thumbnail-wrapper"
+                                                    class:selecting=move || is_selecting.get()
                                                     class:selected=is_selected
                                                     on:click=move |_| {
                                                         if is_selecting.get_untracked() {
@@ -486,18 +581,6 @@ pub fn PostListPage() -> impl IntoView {
                                                         }
                                                     }
                                                 >
-                                                    {move || is_selecting.get().then(|| view! {
-                                                        <div class="select-overlay">
-                                                            <input
-                                                                type="checkbox"
-                                                                prop:checked=is_selected
-                                                                on:click=move |ev| {
-                                                                    ev.stop_propagation();
-                                                                    on_toggle.run(id);
-                                                                }
-                                                            />
-                                                        </div>
-                                                    })}
                                                     <PostThumbnail
                                                         id=id
                                                         thumbnail_url=thumbnail_url
@@ -510,6 +593,8 @@ pub fn PostListPage() -> impl IntoView {
                                                 </div>
                                             }
                                         }).collect_view()}
+                                        // Flexbox dummies to prevent last row from stretching
+                                        {(0..20).map(|_| view! { <div class="flexbox-dummy" /> }).collect_view()}
                                     </div>
                                     <Pagination
                                         offset=offset

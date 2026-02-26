@@ -78,6 +78,7 @@ pub enum Rating {
 
 /// The type of operation recorded in a snapshot.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ResourceOperation {
     Created,
     Modified,
@@ -87,6 +88,7 @@ pub enum ResourceOperation {
 
 /// The type of resource recorded in a snapshot.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ResourceType {
     Comment,
     Pool,
@@ -160,7 +162,7 @@ mod tests {
     fn resource_operation_serde() {
         let op = ResourceOperation::Modified;
         let json = serde_json::to_string(&op).unwrap();
-        assert_eq!(json, r#""Modified""#);
+        assert_eq!(json, r#""modified""#);
         let parsed: ResourceOperation = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed, op);
     }

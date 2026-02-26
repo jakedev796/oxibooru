@@ -5,4 +5,5 @@ pub mod components;
 pub mod keyboard;
 pub mod pages;
 pub mod settings;
+pub mod tag_cache;
 pub mod utils;

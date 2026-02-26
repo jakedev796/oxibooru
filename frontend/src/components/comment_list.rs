@@ -8,7 +8,7 @@ use crate::auth::AuthState;
 use crate::components::comment_form::CommentForm;
 use crate::components::markdown::Markdown;
 use crate::components::score_widget::ScoreWidget;
-use crate::utils::format_time_short;
+use crate::utils::format_relative_time;
 
 #[component]
 pub fn CommentList(post_id: i64, comments: RwSignal<Vec<CommentInfo>>) -> impl IntoView {
@@ -21,10 +21,10 @@ pub fn CommentList(post_id: i64, comments: RwSignal<Vec<CommentInfo>>) -> impl I
             {move || {
                 let current_username = auth.current_user.get()
                     .and_then(|u| u.name.clone());
-                let can_edit_own = auth.has_privilege("comments:edit:own");
-                let can_edit_any = auth.has_privilege("comments:edit:any");
-                let can_delete_own = auth.has_privilege("comments:delete:own");
-                let can_delete_any = auth.has_privilege("comments:delete:any");
+                let can_edit_own = auth.has_privilege("comment_edit_own");
+                let can_edit_any = auth.has_privilege("comment_edit_any");
+                let can_delete_own = auth.has_privilege("comment_delete_own");
+                let can_delete_any = auth.has_privilege("comment_delete_any");
 
                 if comments.get().is_empty() {
                     return view! { <p class="no-comments">"No comments yet."</p> }.into_any();
@@ -33,11 +33,15 @@ pub fn CommentList(post_id: i64, comments: RwSignal<Vec<CommentInfo>>) -> impl I
                 comments.get().into_iter().map(|comment| {
                     let comment_id = comment.id.unwrap_or(0);
                     let version = comment.version.clone().unwrap_or_default();
-                    let author = comment.user.flatten()
+                    let micro_user = comment.user.flatten();
+                    let author = micro_user.as_ref()
                         .map(|u| u.name.clone())
                         .unwrap_or_else(|| "Anonymous".to_string());
-                    let time_str = comment.creation_time.as_deref()
-                        .map(format_time_short)
+                    let avatar_url = micro_user.as_ref()
+                        .map(|u| u.avatar_url.clone())
+                        .filter(|url| !url.is_empty());
+                    let relative_time = comment.creation_time.as_deref()
+                        .map(format_relative_time)
                         .unwrap_or_default();
                     let comment_text = comment.text.clone().unwrap_or_default();
 
@@ -46,6 +50,7 @@ pub fn CommentList(post_id: i64, comments: RwSignal<Vec<CommentInfo>>) -> impl I
                     let can_delete = (is_own && can_delete_own) || can_delete_any;
 
                     let author_href = format!("/user/{author}");
+                    let avatar_href = format!("/user/{author}");
                     let score_signal = RwSignal::new(comment.score.unwrap_or(0));
                     let own_score_signal = RwSignal::new(comment.own_score.unwrap_or(Rating::None));
 
@@ -63,7 +68,7 @@ pub fn CommentList(post_id: i64, comments: RwSignal<Vec<CommentInfo>>) -> impl I
                     });
 
                     let version_del = version.clone();
-                    let on_delete = move |_| {
+                    let on_delete = move |_: leptos::ev::MouseEvent| {
                         let client = api.get_untracked();
                         let v = version_del.clone();
                         leptos::task::spawn_local(async move {
@@ -91,42 +96,69 @@ pub fn CommentList(post_id: i64, comments: RwSignal<Vec<CommentInfo>>) -> impl I
                     let te = text_edit;
 
                     view! {
-                        <div class="comment">
-                            <div class="comment-header">
-                                <a class="comment-author" href=author_href>{author}</a>
-                                <time>{time_str}</time>
-                                <ScoreWidget score=score_signal own_score=own_score_signal on_vote=on_vote />
+                        <div class="comment-container">
+                            <div class="comment-avatar">
+                                <a href=avatar_href>
+                                    {match avatar_url {
+                                        Some(url) => view! {
+                                            <img class="thumbnail" src=url alt="avatar" />
+                                        }.into_any(),
+                                        None => view! {
+                                            <div class="thumbnail empty">
+                                                <i class="fa fa-user" />
+                                            </div>
+                                        }.into_any(),
+                                    }}
+                                </a>
                             </div>
-                            <div class="comment-body">
-                                {
-                                    let td = text_display;
-                                    move || {
-                                        if editing_id.get() == Some(comment_id) {
-                                            view! {
-                                                <CommentForm
-                                                    post_id=post_id
-                                                    on_submit=on_edit_done
-                                                    edit_comment_id=comment_id
-                                                    edit_comment_version=ve.clone()
-                                                    initial_text=te.clone()
-                                                    on_cancel=on_cancel_edit
-                                                />
-                                            }.into_any()
-                                        } else {
-                                            view! {
-                                                <Markdown text=td.clone() />
-                                            }.into_any()
+                            <div class="comment">
+                                <header>
+                                    <span class="nickname">
+                                        <a href=author_href>{author}</a>
+                                    </span>
+                                    " "
+                                    <span class="date">"commented " {relative_time}</span>
+                                    <ScoreWidget score=score_signal own_score=own_score_signal on_vote=on_vote />
+                                    {(can_edit || can_delete).then(|| view! {
+                                        <span class="action-container">
+                                            {can_edit.then(|| view! {
+                                                <a href="javascript:void(0)" class="edit" on:click=move |_| editing_id.set(Some(comment_id))>
+                                                    <i class="fa fa-pencil" />
+                                                    " edit"
+                                                </a>
+                                            })}
+                                            {can_delete.then(|| view! {
+                                                <a href="javascript:void(0)" class="delete" on:click=on_delete>
+                                                    <i class="fa fa-remove" />
+                                                    " delete"
+                                                </a>
+                                            })}
+                                        </span>
+                                    })}
+                                </header>
+                                <div class="comment-body">
+                                    {
+                                        let td = text_display;
+                                        move || {
+                                            if editing_id.get() == Some(comment_id) {
+                                                view! {
+                                                    <CommentForm
+                                                        post_id=post_id
+                                                        on_submit=on_edit_done
+                                                        edit_comment_id=comment_id
+                                                        edit_comment_version=ve.clone()
+                                                        initial_text=te.clone()
+                                                        on_cancel=on_cancel_edit
+                                                    />
+                                                }.into_any()
+                                            } else {
+                                                view! {
+                                                    <Markdown text=td.clone() />
+                                                }.into_any()
+                                            }
                                         }
                                     }
-                                }
-                            </div>
-                            <div class="comment-actions">
-                                {can_edit.then(|| view! {
-                                    <button class="btn-edit" on:click=move |_| editing_id.set(Some(comment_id))>"Edit"</button>
-                                })}
-                                {can_delete.then(|| view! {
-                                    <button class="btn-delete" on:click=on_delete>"Delete"</button>
-                                })}
+                                </div>
                             </div>
                         </div>
                     }

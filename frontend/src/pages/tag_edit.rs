@@ -6,12 +6,17 @@ use oxibooru_shared::category::TagCategoryInfo;
 
 use crate::api::tags::{CreateTagBody, UpdateTagBody};
 use crate::api::{ApiClient, ApiError};
+use crate::auth::AuthState;
 use crate::components::tag_input::TagInput;
+use crate::settings::SettingsState;
+use crate::tag_cache::TagCache;
 
-/// Used for both creating and editing tags. When `name` URL param is present, it's edit mode.
 #[component]
 pub fn TagEditPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let auth = expect_context::<AuthState>();
+    let settings = expect_context::<SettingsState>();
+    let tag_cache = expect_context::<TagCache>();
     let params = use_params_map();
     let navigate = use_navigate();
 
@@ -29,54 +34,68 @@ pub fn TagEditPage() -> impl IntoView {
     let implications = RwSignal::new(Vec::<String>::new());
     let suggestions = RwSignal::new(Vec::<String>::new());
     let (version, set_version) = signal(String::new());
-    let categories = RwSignal::new(Vec::<TagCategoryInfo>::new());
+    let categories = expect_context::<RwSignal<Vec<TagCategoryInfo>>>();
 
     let (submitting, set_submitting) = signal(false);
     let (error_msg, set_error_msg) = signal(Option::<String>::None);
     let (success_msg, set_success_msg) = signal(Option::<String>::None);
 
+    // Helper to populate form signals from a TagInfo
+    let populate_from_tag = move |tag: &oxibooru_shared::tag::TagInfo| {
+        let tag_names = tag.names.clone().unwrap_or_default();
+        set_names_str.set(tag_names.join(", "));
+        set_category.set(tag.category.clone().unwrap_or_default());
+        set_description.set(tag.description.clone().unwrap_or_default());
+        let impl_names: Vec<String> = tag
+            .implications
+            .clone()
+            .unwrap_or_default()
+            .into_iter()
+            .filter_map(|t| t.names.into_iter().next())
+            .collect();
+        implications.set(impl_names);
+        let sugg_names: Vec<String> = tag
+            .suggestions
+            .clone()
+            .unwrap_or_default()
+            .into_iter()
+            .filter_map(|t| t.names.into_iter().next())
+            .collect();
+        suggestions.set(sugg_names);
+        set_version.set(tag.version.clone().unwrap_or_default());
+    };
+
     // Load tag data + categories
     Effect::new(move || {
         let client = api.get_untracked();
         let name = tag_name();
-        leptos::task::spawn_local(async move {
-            // Load categories
-            if let Ok(cats) = client.get_tag_categories().await {
-                categories.set(cats.results);
-            }
 
+        // Use cached tag data if available
+        if !name.is_empty() {
+            if let Some(cached) = tag_cache.get(&name) {
+                populate_from_tag(&cached);
+                set_loading.set(false);
+            }
+        }
+
+        leptos::task::spawn_local(async move {
             if name.is_empty() {
-                // Create mode — no tag to load
+                // Create mode
                 set_loading.set(false);
                 return;
             }
 
             match client.get_tag(&name).await {
                 Ok(tag) => {
-                    let tag_names = tag.names.unwrap_or_default();
-                    set_names_str.set(tag_names.join(", "));
-                    set_category.set(tag.category.unwrap_or_default());
-                    set_description.set(tag.description.unwrap_or_default());
-                    let impl_names: Vec<String> = tag
-                        .implications
-                        .unwrap_or_default()
-                        .into_iter()
-                        .filter_map(|t| t.names.into_iter().next())
-                        .collect();
-                    implications.set(impl_names);
-                    let sugg_names: Vec<String> = tag
-                        .suggestions
-                        .unwrap_or_default()
-                        .into_iter()
-                        .filter_map(|t| t.names.into_iter().next())
-                        .collect();
-                    suggestions.set(sugg_names);
-                    set_version.set(tag.version.unwrap_or_default());
+                    tag_cache.set(&name, tag.clone());
+                    populate_from_tag(&tag);
                     set_loading.set(false);
                 }
                 Err(_) => {
-                    set_load_error.set(true);
-                    set_loading.set(false);
+                    if loading.get_untracked() {
+                        set_load_error.set(true);
+                        set_loading.set(false);
+                    }
                 }
             }
         });
@@ -145,7 +164,7 @@ pub fn TagEditPage() -> impl IntoView {
                         set_version.set(updated.version.unwrap_or_default());
                         set_success_msg.set(Some("Tag updated.".into()));
                         set_submitting.set(false);
-                        // If name changed, navigate
+                        // If name changed, navigate to the new tag
                         let new_name = updated.names.and_then(|n| n.into_iter().next()).unwrap_or(name.clone());
                         if new_name != name {
                             let encoded = js_sys::encode_uri_component(&new_name);
@@ -161,14 +180,57 @@ pub fn TagEditPage() -> impl IntoView {
         }
     };
 
+    // Tab navigation privileges
+    let can_edit = Memo::new(move |_| {
+        auth.has_privilege("tag_edit_name")
+            || auth.has_privilege("tag_edit_category")
+            || auth.has_privilege("tag_edit_description")
+            || auth.has_privilege("tag_edit_implication")
+            || auth.has_privilege("tag_edit_suggestion")
+    });
+    let can_merge = Memo::new(move |_| auth.has_privilege("tag_merge"));
+    let can_delete = Memo::new(move |_| auth.has_privilege("tag_delete"));
+
     view! {
         <Title text=move || if is_create() { "Create Tag".to_string() } else { format!("Edit Tag — {}", tag_name()) } />
-        <div class="content-wrapper">
-            <h1>{move || if is_create() { "Create Tag".to_string() } else { format!("Edit Tag \u{2014} {}", tag_name()) }}</h1>
+        <div class="tag-view-page">
+        <div class="tag-view">
+            // Header
+            {move || {
+                if is_create() {
+                    view! { <h1>"Create Tag"</h1> }.into_any()
+                } else {
+                    let name = tag_name();
+                    let display = settings.display_name(&name);
+                    let summary_href = format!("/tag/{name}");
+                    let edit_href = format!("/tag/{name}/edit");
+                    let merge_href = format!("/tag/{name}/merge");
+                    let delete_href = format!("/tag/{name}/delete");
+                    view! {
+                        <h1>{display}</h1>
+                        <nav class="buttons">
+                            <ul>
+                                <li><a href=summary_href>"Summary"</a></li>
+                                {move || can_edit.get().then(|| view! {
+                                    <li class="active"><a href=edit_href.clone()>"Edit"</a></li>
+                                })}
+                                {move || can_merge.get().then(|| view! {
+                                    <li><a href=merge_href.clone()>"Merge with\u{2026}"</a></li>
+                                })}
+                                {move || can_delete.get().then(|| view! {
+                                    <li><a href=delete_href.clone()>"Delete"</a></li>
+                                })}
+                            </ul>
+                        </nav>
+                    }.into_any()
+                }
+            }}
+
             {move || loading.get().then(|| view! { <p>"Loading\u{2026}"</p> })}
             {move || load_error.get().then(|| view! { <p class="error">"Tag not found."</p> })}
+
             <form
-                class="form-grid"
+                class="tag-edit"
                 on:submit=on_submit
                 style:display=move || if loading.get() || load_error.get() { "none" } else { "" }
             >
@@ -204,6 +266,14 @@ pub fn TagEditPage() -> impl IntoView {
                 </div>
 
                 <div class="form-row">
+                    <TagInput tags=implications label="Implications" />
+                </div>
+
+                <div class="form-row">
+                    <TagInput tags=suggestions label="Suggestions" />
+                </div>
+
+                <div class="form-row">
                     <label for="tag-desc">"Description"</label>
                     <textarea
                         id="tag-desc"
@@ -212,14 +282,6 @@ pub fn TagEditPage() -> impl IntoView {
                         rows=4
                         disabled=move || submitting.get()
                     />
-                </div>
-
-                <div class="form-row">
-                    <TagInput tags=implications label="Implications" />
-                </div>
-
-                <div class="form-row">
-                    <TagInput tags=suggestions label="Suggestions" />
                 </div>
 
                 <div class="form-row buttons">
@@ -234,13 +296,9 @@ pub fn TagEditPage() -> impl IntoView {
                             }
                         }}
                     </button>
-                    {move || (!is_create()).then(|| {
-                        let name = tag_name();
-                        let encoded = js_sys::encode_uri_component(&name).as_string().unwrap_or_default();
-                        view! { <a href=format!("/tag/{encoded}")>"Back to tag"</a> }
-                    })}
                 </div>
             </form>
+        </div>
         </div>
     }
 }

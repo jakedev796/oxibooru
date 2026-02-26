@@ -8,6 +8,8 @@ use crate::api::{ApiClient, ApiError, Credentials};
 
 const STORAGE_KEY_USERNAME: &str = "oxibooru-auth-username";
 const STORAGE_KEY_PASSWORD: &str = "oxibooru-auth-password";
+const STORAGE_KEY_PRIVILEGES: &str = "oxibooru-auth-privileges";
+const STORAGE_KEY_USER: &str = "oxibooru-auth-user";
 
 /// Auth state provided as Leptos context.
 #[derive(Copy, Clone)]
@@ -19,9 +21,13 @@ pub struct AuthState {
 
 impl AuthState {
     pub fn new(api: RwSignal<ApiClient>) -> Self {
+        // Restore cached privileges and user from localStorage (synchronous — no flicker)
+        let cached_privileges: Option<PrivilegeConfig> = LocalStorage::get(STORAGE_KEY_PRIVILEGES).ok();
+        let cached_user: Option<UserInfo> = LocalStorage::get(STORAGE_KEY_USER).ok();
+
         let state = Self {
-            current_user: RwSignal::new(None),
-            privileges: RwSignal::new(None),
+            current_user: RwSignal::new(cached_user),
+            privileges: RwSignal::new(cached_privileges),
             api,
         };
 
@@ -60,9 +66,12 @@ impl AuthState {
                 let _ = LocalStorage::set(STORAGE_KEY_USERNAME, &username);
                 let _ = LocalStorage::set(STORAGE_KEY_PASSWORD, &password);
                 self.privileges.set(Some(resp.config.privileges.clone()));
+                // Cache privileges
+                let _ = LocalStorage::set(STORAGE_KEY_PRIVILEGES, &resp.config.privileges);
 
                 // Fetch and set current user profile
                 if let Ok(user) = self.api.get_untracked().get_user(&username).await {
+                    let _ = LocalStorage::set(STORAGE_KEY_USER, &user);
                     self.current_user.set(Some(user));
                 }
             }
@@ -89,9 +98,11 @@ impl AuthState {
         match self.api.get_untracked().get_info_bump_login().await {
             Ok(resp) => {
                 self.privileges.set(Some(resp.config.privileges.clone()));
+                let _ = LocalStorage::set(STORAGE_KEY_PRIVILEGES, &resp.config.privileges);
                 // Extract username from stored credentials
                 if let Ok(username) = LocalStorage::get::<String>(STORAGE_KEY_USERNAME) {
                     if let Ok(user) = self.api.get_untracked().get_user(&username).await {
+                        let _ = LocalStorage::set(STORAGE_KEY_USER, &user);
                         self.current_user.set(Some(user));
                     }
                 }
@@ -111,16 +122,18 @@ impl AuthState {
         });
         LocalStorage::delete(STORAGE_KEY_USERNAME);
         LocalStorage::delete(STORAGE_KEY_PASSWORD);
+        LocalStorage::delete(STORAGE_KEY_PRIVILEGES);
+        LocalStorage::delete(STORAGE_KEY_USER);
     }
 
     /// Check if the current user is logged in.
     pub fn is_logged_in(&self) -> bool {
-        self.current_user.get_untracked().is_some()
+        self.current_user.get().is_some()
     }
 
     /// Check if the current user has a given privilege.
     pub fn has_privilege(&self, name: &str) -> bool {
-        let Some(privs) = self.privileges.get_untracked() else {
+        let Some(privs) = self.privileges.get() else {
             return false;
         };
         let Some(required_rank) = privs.get(name) else {
@@ -128,7 +141,7 @@ impl AuthState {
         };
         let user_rank = self
             .current_user
-            .get_untracked()
+            .get()
             .and_then(|u| u.rank)
             .unwrap_or(UserRank::Anonymous);
         user_rank >= required_rank

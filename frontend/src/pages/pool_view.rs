@@ -6,12 +6,14 @@ use crate::api::ApiClient;
 use crate::components::api_error::ApiErrorMessage;
 use crate::components::loading_bar::LoadingState;
 use crate::components::markdown::Markdown;
+use crate::settings::SettingsState;
 use crate::utils::format_time_short;
 
 #[component]
 pub fn PoolViewPage() -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
     let loading = expect_context::<LoadingState>();
+    let settings = expect_context::<SettingsState>();
     let params = use_params_map();
 
     let pool_id = Memo::new(move |_| params.get().get("id").and_then(|s| s.parse::<i64>().ok()).unwrap_or(0));
@@ -48,12 +50,13 @@ pub fn PoolViewPage() -> impl IntoView {
                                 .unwrap_or_default();
                             let description = pool.description.unwrap_or_default();
                             let posts = pool.posts.unwrap_or_default();
+                            let display_name = settings.display_name(&primary_name);
                             let category_class = format!("pool-category-{category}");
 
                             view! {
                                 <div class="pool-view">
                                     <header class=category_class>
-                                        <h1>{primary_name}</h1>
+                                        <h1>{display_name}</h1>
                                     </header>
 
                                     <section class="pool-summary">
@@ -68,7 +71,8 @@ pub fn PoolViewPage() -> impl IntoView {
                                                 <h3>"Aliases"</h3>
                                                 <ul>
                                                     {aliases.into_iter().map(|alias| {
-                                                        view! { <li>{alias}</li> }
+                                                        let display = settings.display_name(&alias);
+                                                        view! { <li>{display}</li> }
                                                     }).collect_view()}
                                                 </ul>
                                             </div>

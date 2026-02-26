@@ -18,22 +18,21 @@ pub fn PostThumbnail(
         PostSafety::Unsafe => "safety-unsafe",
     };
 
-    let type_badge = match post_type {
-        PostType::Video => Some("▶"),
-        PostType::Animation => Some("▶"),
-        PostType::Flash => Some("⚡"),
+    let type_badge_class = match post_type {
+        PostType::Video | PostType::Animation => Some("type-badge type-video"),
+        PostType::Flash => Some("type-badge type-flash"),
         PostType::Image => None,
     };
 
+    let bg_style = format!("background-image: url('{thumbnail_url}')");
+
     view! {
         <article class="post-thumbnail">
-            <a href=format!("/post/{id}")>
-                <img src=thumbnail_url loading="lazy" alt=format!("Post {id}") />
-                <span class=format!("safety-badge {safety_class}")>
-                    {format!("{safety:?}").to_lowercase()}
-                </span>
-                {type_badge.map(|badge| view! {
-                    <span class="type-badge">{badge}</span>
+            <a href=format!("/post/{id}") style=bg_style>
+                <img src=thumbnail_url.clone() loading="lazy" alt=format!("Post {id}") />
+                <span class=format!("safety-badge {safety_class}") />
+                {type_badge_class.map(|cls| view! {
+                    <span class=cls />
                 })}
             </a>
             <div class="post-stats">

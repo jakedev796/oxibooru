@@ -6,11 +6,13 @@ use leptos::prelude::*;
 use oxibooru_shared::tag::TagInfo;
 
 use crate::api::ApiClient;
+use crate::settings::SettingsState;
 
 /// Debounced tag search dropdown with keyboard navigation.
 #[component]
 pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] placeholder: String) -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let settings = expect_context::<SettingsState>();
     let (query, set_query) = signal(String::new());
     let (results, set_results) = signal(Vec::<TagInfo>::new());
     let (selected_index, set_selected_index) = signal(Option::<usize>::None);
@@ -37,7 +39,11 @@ pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] plac
         let timeout = Timeout::new(300, move || {
             dh2.borrow_mut().take();
             let client = api.get_untracked();
-            let search_query = format!("*{val}*");
+            let search_query = if val.len() >= 3 {
+                format!("*{val}* sort:usages")
+            } else {
+                format!("{val}* sort:usages")
+            };
             leptos::task::spawn_local(async move {
                 if let Ok(page) = client.get_tags(&search_query, 0, 15, "names,category,usages").await {
                     set_results.set(page.results);
@@ -132,6 +138,7 @@ pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] plac
                         let usages = tag.usages.unwrap_or(0);
                         let is_selected = move || selected_index.get() == Some(i);
                         let name_click = name.clone();
+                        let display = settings.display_name(&name);
                         let class = format!("autocomplete-item tag-category-{category}");
                         view! {
                             <li
@@ -144,7 +151,7 @@ pub fn TagAutocomplete(on_select: Callback<String>, #[prop(optional, into)] plac
                                     set_show_dropdown.set(false);
                                 }
                             >
-                                <span class="tag-name">{name}</span>
+                                <span class="tag-name">{display}</span>
                                 <span class="tag-usages">{usages}</span>
                             </li>
                         }

@@ -230,8 +230,8 @@ pub fn PostEditPage() -> impl IntoView {
         });
     };
 
-    let can_delete = auth.has_privilege("posts:delete:own") || auth.has_privilege("posts:delete:any");
-    let can_feature = auth.has_privilege("posts:feature");
+    let can_delete = auth.has_privilege("post_delete");
+    let can_feature = auth.has_privilege("post_feature");
 
     // Keyboard shortcuts: Ctrl+S to save
     let shortcuts = expect_context::<KeyboardShortcuts>();

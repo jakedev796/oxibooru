@@ -165,8 +165,10 @@ pub fn PoolListPage() -> impl IntoView {
 }
 
 fn render_pool_row(pool: PoolInfo) -> impl IntoView {
+    let settings = expect_context::<SettingsState>();
     let id = pool.id.unwrap_or(0);
     let primary_name = pool.names.as_ref().and_then(|n| n.first().cloned()).unwrap_or_default();
+    let display_name = settings.display_name(&primary_name);
     let category = pool.category.clone().unwrap_or_default();
     let post_count = pool.post_count.unwrap_or(0);
     let created = pool.creation_time.as_deref().map(format_time_short).unwrap_or_default();
@@ -174,7 +176,7 @@ fn render_pool_row(pool: PoolInfo) -> impl IntoView {
     let row_class = format!("pool-category-{category}");
     view! {
         <tr class=row_class>
-            <td><a href=href>{primary_name}</a></td>
+            <td><a href=href>{display_name}</a></td>
             <td>{category}</td>
             <td>{post_count}</td>
             <td>{created}</td>

@@ -45,7 +45,7 @@ pub fn Expander(
         <section class="expander">
             <header class="expander-header" on:click=toggle>
                 <span class="expander-chevron">
-                    {move || if expanded.get() { "\u{25BC}" } else { "\u{25B6}" }}
+                    <i class=move || if expanded.get() { "fa fa-chevron-down" } else { "fa fa-chevron-up" } />
                 </span>
                 <span class="expander-title">{title}</span>
             </header>

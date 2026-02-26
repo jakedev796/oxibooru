@@ -6,12 +6,14 @@ use leptos::prelude::*;
 use oxibooru_shared::pool::PoolInfo;
 
 use crate::api::ApiClient;
+use crate::settings::SettingsState;
 
 /// Chip-based multi-pool input with debounced autocomplete.
 /// Each pool is represented as (id, display_name).
 #[component]
 pub fn PoolInput(pools: RwSignal<Vec<(i64, String)>>, #[prop(optional, into)] label: String) -> impl IntoView {
     let api = expect_context::<RwSignal<ApiClient>>();
+    let settings = expect_context::<SettingsState>();
     let (query, set_query) = signal(String::new());
     let (results, set_results) = signal(Vec::<PoolInfo>::new());
     let (selected_index, set_selected_index) = signal(Option::<usize>::None);
@@ -116,13 +118,14 @@ pub fn PoolInput(pools: RwSignal<Vec<(i64, String)>>, #[prop(optional, into)] la
             {(!label.is_empty()).then(|| view! { <label>{label}</label> })}
             <div class="tag-chips">
                 {move || pools.get().into_iter().map(|(id, name)| {
+                    let display = settings.display_name(&name);
                     view! {
                         <span class="tag-chip">
-                            {name}
+                            {display}
                             <button type="button" class="chip-remove" on:click=move |_| {
                                 pools.update(|list| list.retain(|(pid, _)| *pid != id));
                             }>
-                                "\u{00D7}"
+                                <i class="fa fa-remove" />
                             </button>
                         </span>
                     }
@@ -150,6 +153,7 @@ pub fn PoolInput(pools: RwSignal<Vec<(i64, String)>>, #[prop(optional, into)] la
                             let category = pool.category.clone().unwrap_or_default();
                             let is_selected = move || selected_index.get() == Some(i);
                             let name_click = name.clone();
+                            let display = settings.display_name(&name);
                             let class = format!("autocomplete-item pool-category-{category}");
                             view! {
                                 <li
@@ -166,7 +170,7 @@ pub fn PoolInput(pools: RwSignal<Vec<(i64, String)>>, #[prop(optional, into)] la
                                         set_show_dropdown.set(false);
                                     }
                                 >
-                                    <span class="pool-name">{name}</span>
+                                    <span class="pool-name">{display}</span>
                                 </li>
                             }
                         }).collect_view()}

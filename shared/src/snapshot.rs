@@ -25,8 +25,8 @@ mod tests {
     fn deserialize_snapshot_info() {
         let json = r#"{
             "user": {"name": "admin", "avatarUrl": "/avatars/admin.jpg"},
-            "operation": "Modified",
-            "type": "Tag",
+            "operation": "modified",
+            "type": "tag",
             "id": "character",
             "data": {"type": "object change", "value": {}},
             "time": "2024-01-15T10:30:45Z"
@@ -43,8 +43,8 @@ mod tests {
     fn deserialize_snapshot_with_null_user() {
         let json = r#"{
             "user": null,
-            "operation": "Created",
-            "type": "Post",
+            "operation": "created",
+            "type": "post",
             "id": "123",
             "time": "2024-01-15T10:30:45Z"
         }"#;

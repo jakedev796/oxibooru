@@ -19,6 +19,9 @@ pub struct Settings {
     pub tag_underscores: bool,
     pub keyboard_shortcuts: bool,
     pub fit_mode: String,
+    pub post_flow: bool,
+    pub transparency_grid: bool,
+    pub autoplay_videos: bool,
 }
 
 impl Default for Settings {
@@ -35,6 +38,9 @@ impl Default for Settings {
             tag_underscores: false,
             keyboard_shortcuts: true,
             fit_mode: "fit-both".to_string(),
+            post_flow: false,
+            transparency_grid: true,
+            autoplay_videos: false,
         }
     }
 }
@@ -77,6 +83,15 @@ impl SettingsState {
             s.save();
         });
     }
+
+    /// Format a name for display, replacing underscores with spaces if the setting is enabled.
+    pub fn display_name(&self, name: &str) -> String {
+        if self.inner.with(|s| s.tag_underscores) {
+            name.replace('_', " ")
+        } else {
+            name.to_string()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -97,6 +112,9 @@ mod tests {
         assert!(!s.tag_underscores);
         assert!(s.keyboard_shortcuts);
         assert_eq!(s.fit_mode, "fit-both");
+        assert!(!s.post_flow);
+        assert!(s.transparency_grid);
+        assert!(!s.autoplay_videos);
     }
 
     #[test]

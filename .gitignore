@@ -22,3 +22,5 @@ e2e/playwright-report/
 
 # Trunk build output
 frontend/dist/
+
+legacy

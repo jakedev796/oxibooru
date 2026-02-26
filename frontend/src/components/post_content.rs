@@ -1,6 +1,8 @@
 use leptos::prelude::*;
 use oxibooru_shared::enums::PostType;
 
+use crate::settings::SettingsState;
+
 /// Displays post content (image, video, or animation) with reactive CSS fit modes.
 #[component]
 pub fn PostContent(
@@ -10,13 +12,20 @@ pub fn PostContent(
     #[prop(default = false)] upscale: bool,
     #[prop(default = vec![])] flags: Vec<String>,
 ) -> impl IntoView {
+    let settings = expect_context::<SettingsState>();
     let has_loop = flags.iter().any(|f| f == "loop");
+    let autoplay = settings.inner.with_untracked(|s| s.autoplay_videos);
     let container_class = move || {
         let mode = fit_mode.get();
-        if upscale {
-            format!("post-content {mode} upscale")
+        let transparency = if settings.inner.with(|s| s.transparency_grid) {
+            ""
         } else {
-            format!("post-content {mode}")
+            " no-transparency-grid"
+        };
+        if upscale {
+            format!("post-content {mode} upscale{transparency}")
+        } else {
+            format!("post-content {mode}{transparency}")
         }
     };
 
@@ -39,7 +48,7 @@ pub fn PostContent(
                     src=content_url
                     controls=true
                     loop=has_loop
-                    autoplay=false
+                    autoplay=autoplay
                     preload="metadata"
                 />
             </div>

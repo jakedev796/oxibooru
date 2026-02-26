@@ -169,6 +169,7 @@ pub fn TagListPage() -> impl IntoView {
 }
 
 fn render_tag_row(tag: TagInfo) -> impl IntoView {
+    let settings = expect_context::<SettingsState>();
     let primary_name = tag.names.as_ref().and_then(|n| n.first().cloned()).unwrap_or_default();
     let category = tag.category.clone().unwrap_or_default();
     let usages = tag.usages.unwrap_or(0);
@@ -177,7 +178,7 @@ fn render_tag_row(tag: TagInfo) -> impl IntoView {
         .as_ref()
         .map(|v| {
             v.iter()
-                .map(|t| t.names.first().cloned().unwrap_or_default())
+                .map(|t| settings.display_name(&t.names.first().cloned().unwrap_or_default()))
                 .collect::<Vec<_>>()
                 .join(", ")
         })
@@ -187,17 +188,18 @@ fn render_tag_row(tag: TagInfo) -> impl IntoView {
         .as_ref()
         .map(|v| {
             v.iter()
-                .map(|t| t.names.first().cloned().unwrap_or_default())
+                .map(|t| settings.display_name(&t.names.first().cloned().unwrap_or_default()))
                 .collect::<Vec<_>>()
                 .join(", ")
         })
         .unwrap_or_default();
     let created = tag.creation_time.as_deref().map(format_time_short).unwrap_or_default();
     let href = format!("/tag/{primary_name}");
+    let display_name = settings.display_name(&primary_name);
     let row_class = format!("tag-category-{category}");
     view! {
         <tr class=row_class>
-            <td><a href=href>{primary_name}</a></td>
+            <td><a href=href>{display_name}</a></td>
             <td>{category}</td>
             <td>{usages}</td>
             <td class="tag-relations">{implications}</td>

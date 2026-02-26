@@ -13,7 +13,7 @@ pub fn FavoriteWidget(favorited: RwSignal<bool>, count: RwSignal<i64>, on_toggle
                 on_toggle.run(!was_fav);
             }
         >
-            <span class="heart">{move || if favorited.get() { "\u{2665}" } else { "\u{2661}" }}</span>
+            <i class=move || if favorited.get() { "fa fa-heart" } else { "fa fa-heart-o" } />
             " "
             <span class="fav-count">{move || count.get()}</span>
         </button>

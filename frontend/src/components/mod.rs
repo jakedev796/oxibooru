@@ -17,3 +17,4 @@ pub mod score_widget;
 pub mod search_bar;
 pub mod tag_autocomplete;
 pub mod tag_input;
+pub mod tag_view_wrapper;

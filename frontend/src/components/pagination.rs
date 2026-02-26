@@ -1,9 +1,6 @@
 use leptos::prelude::*;
 
-/// Manual pagination component.
-///
-/// Renders page number links with prev/next buttons.
-/// The `href_for_page` callback takes `(offset, limit)` and returns a URL string.
+/// Manual pagination component that renders a list of page numbers and chevron icons for prev/next.
 #[component]
 pub fn Pagination(
     offset: i64,
@@ -19,12 +16,7 @@ pub fn Pagination(
     let total_pages = (total + limit - 1) / limit;
 
     if total_pages <= 1 {
-        return view! {
-            <nav class="pagination">
-                <span class="total">{format!("{total} result{}", if total == 1 { "" } else { "s" })}</span>
-            </nav>
-        }
-        .into_any();
+        return ().into_any();
     }
 
     // Compute visible page numbers using threshold algorithm:
@@ -43,24 +35,51 @@ pub fn Pagination(
     };
 
     view! {
-        <nav class="pagination">
-            {prev_href.map(|href| view! {
-                <a class="prev" href=href>"« Prev"</a>
-            })}
-            {pages.into_iter().map(|p| {
-                match p {
-                    PageItem::Ellipsis => view! { <span class="ellipsis">"…"</span> }.into_any(),
-                    PageItem::Page(num) => {
-                        let href = href_for_page.run(((num - 1) * limit, limit));
-                        let class = if num == current_page { "active" } else { "" };
-                        view! { <a href=href class=class>{num}</a> }.into_any()
+        <nav class="buttons">
+            <ul>
+                <li>
+                    {match prev_href {
+                        Some(href) => view! {
+                            <a rel="prev" class="prev" href=href>
+                                <i class="fa fa-chevron-left"></i>
+                            </a>
+                        }.into_any(),
+                        None => view! {
+                            <a rel="prev" class="prev disabled">
+                                <i class="fa fa-chevron-left"></i>
+                            </a>
+                        }.into_any(),
+                    }}
+                </li>
+                {pages.into_iter().map(|p| {
+                    match p {
+                        PageItem::Ellipsis => view! {
+                            <li class="ellipsis">{"\u{2026}"}</li>
+                        }.into_any(),
+                        PageItem::Page(num) => {
+                            let href = href_for_page.run(((num - 1) * limit, limit));
+                            let class = if num == current_page { "active" } else { "" };
+                            view! {
+                                <li class=class><a href=href>{num}</a></li>
+                            }.into_any()
+                        }
                     }
-                }
-            }).collect_view()}
-            {next_href.map(|href| view! {
-                <a class="next" href=href>"Next »"</a>
-            })}
-            <span class="total">{format!("{total} result{}", if total == 1 { "" } else { "s" })}</span>
+                }).collect_view()}
+                <li>
+                    {match next_href {
+                        Some(href) => view! {
+                            <a rel="next" class="next" href=href>
+                                <i class="fa fa-chevron-right"></i>
+                            </a>
+                        }.into_any(),
+                        None => view! {
+                            <a rel="next" class="next disabled">
+                                <i class="fa fa-chevron-right"></i>
+                            </a>
+                        }.into_any(),
+                    }}
+                </li>
+            </ul>
         </nav>
     }
     .into_any()

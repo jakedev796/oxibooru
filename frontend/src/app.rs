@@ -45,8 +45,14 @@ use crate::pages::user_list::UserListPage;
 use crate::pages::user_tokens::UserTokensPage;
 use crate::pages::user_view::UserViewPage;
 use crate::settings::SettingsState;
+use crate::tag_cache::TagCache;
+use gloo_storage::{LocalStorage, Storage};
 use oxibooru_shared::category::{PoolCategoryInfo, TagCategoryInfo};
 use oxibooru_shared::info::PublicConfig;
+
+const STORAGE_KEY_SERVER_CONFIG: &str = "oxibooru-cache-server-config";
+const STORAGE_KEY_TAG_CATEGORIES: &str = "oxibooru-cache-tag-categories";
+const STORAGE_KEY_POOL_CATEGORIES: &str = "oxibooru-cache-pool-categories";
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -67,6 +73,9 @@ pub fn App() -> impl IntoView {
     // Loading state
     let loading = LoadingState::new();
     provide_context(loading);
+
+    // Tag cache — shared across tag view tabs to avoid re-fetching
+    provide_context(TagCache::new());
 
     // Dark theme: toggle body class based on settings
     Effect::new(move || {
@@ -135,41 +144,40 @@ pub fn App() -> impl IntoView {
         handler.forget();
     }
 
-    // Server config context — used by registration, password reset, etc.
-    let server_config: RwSignal<Option<PublicConfig>> = RwSignal::new(None);
+    // Server config context — restore from cache, then refresh async
+    let cached_config: Option<PublicConfig> = LocalStorage::get(STORAGE_KEY_SERVER_CONFIG).ok();
+    let server_config: RwSignal<Option<PublicConfig>> = RwSignal::new(cached_config);
     provide_context(server_config);
 
-    // Category color contexts — populated on startup for dynamic CSS
-    let tag_categories: RwSignal<Vec<TagCategoryInfo>> = RwSignal::new(Vec::new());
+    // Category color contexts — restore from cache, then refresh async
+    let cached_tag_cats: Vec<TagCategoryInfo> = LocalStorage::get(STORAGE_KEY_TAG_CATEGORIES).unwrap_or_default();
+    let cached_pool_cats: Vec<PoolCategoryInfo> = LocalStorage::get(STORAGE_KEY_POOL_CATEGORIES).unwrap_or_default();
+    let tag_categories: RwSignal<Vec<TagCategoryInfo>> = RwSignal::new(cached_tag_cats);
     provide_context(tag_categories);
-    let pool_categories: RwSignal<Vec<PoolCategoryInfo>> = RwSignal::new(Vec::new());
+    let pool_categories: RwSignal<Vec<PoolCategoryInfo>> = RwSignal::new(cached_pool_cats);
     provide_context(pool_categories);
 
-    // Fetch initial server info to populate privileges and config
-    let initial_info = LocalResource::new(move || {
-        let client = api.get();
-        async move { client.get_info().await.ok() }
-    });
-
-    // When info loads, update auth state with privileges and server config
-    Effect::new(move || {
-        if let Some(Some(info)) = initial_info.get() {
-            auth.privileges.set(Some(info.config.privileges.clone()));
-            server_config.set(Some(info.config.clone()));
-            // Verify stored credentials and populate current_user
-            leptos::task::spawn_local(async move {
-                auth.verify_session().await;
-            });
-        }
-    });
-
-    // Fetch tag and pool categories for dynamic CSS colors
+    // Fetch fresh server info and verify session
     leptos::task::spawn_local(async move {
         let client = api.get_untracked();
+
+        // Refresh server config + privileges
+        if let Ok(info) = client.get_info().await {
+            auth.privileges.set(Some(info.config.privileges.clone()));
+            server_config.set(Some(info.config.clone()));
+            let _ = LocalStorage::set(STORAGE_KEY_SERVER_CONFIG, &info.config);
+        }
+
+        // Verify stored credentials and populate current_user
+        auth.verify_session().await;
+
+        // Refresh tag and pool categories
         if let Ok(data) = client.get_tag_categories().await {
+            let _ = LocalStorage::set(STORAGE_KEY_TAG_CATEGORIES, &data.results);
             tag_categories.set(data.results);
         }
         if let Ok(data) = client.get_pool_categories().await {
+            let _ = LocalStorage::set(STORAGE_KEY_POOL_CATEGORIES, &data.results);
             pool_categories.set(data.results);
         }
     });
